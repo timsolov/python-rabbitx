@@ -86,6 +86,9 @@ rabbitx = RabbitX(
 | Ethereum Testnet    | `ETHEREUM_TESTNET`     | Sepolia testnet     |
 | Blast Mainnet       | `BLAST_MAINNET`        | Blast production    |
 | Blast Testnet       | `BLAST_TESTNET`        | Blast Sepolia test  |
+| Arbitrum            | `ARBITRUM`             | Arbitrum mainnet    |
+| Base                | `BASE`                 | Base mainnet        |
+| Sonic               | `SONIC`                | Sonic mainnet       |
 
 ---
 

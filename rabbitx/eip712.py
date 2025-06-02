@@ -32,7 +32,7 @@ def eip712_message(chainID:int, timestamp:int, domain:str, message:str) -> Signa
     }
     
     EIP712_DOMAIN = {
-        "name": domain_name,
+        "name": domain,
         "version": "1",
         "chainId": chainID,
         # "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
