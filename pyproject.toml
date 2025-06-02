@@ -1,0 +1,13 @@
+[project]
+name = "rabbitx-client-py-uv"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "btrees>=6.1",
+    "eth-account>=0.13.7",
+    "pygments>=2.19.1",
+    "requests>=2.32.3",
+    "websockets>=15.0.1",
+]

@@ -1,7 +1,23 @@
-from eth_account.messages import encode_typed_data
+from eth_account import Account
+from eth_account.messages import SignableMessage
+from eth_account.messages import encode_typed_data, SignableMessage
 
-# Function to encode EIP-712 message
-def create_message(domain_name, message, timestamp):
+def eip712_message(chainID:int, timestamp:int, domain:str, message:str) -> SignableMessage:
+    """
+    Create an EIP-712 message.
+
+    :param chainID: The chain ID
+    :type chainID: int
+    :param timestamp: The timestamp
+    :type timestamp: int
+    :param domain: The domain
+    :type domain: str
+    :param message: The message
+    :type message: str
+    :return: The EIP-712 message
+    :rtype: SignableMessage
+    """
+    
     EIP712_TYPES = {
         "EIP712Domain": [
             {"name": "name", "type": "string"},
@@ -18,7 +34,7 @@ def create_message(domain_name, message, timestamp):
     EIP712_DOMAIN = {
         "name": domain_name,
         "version": "1",
-        "chainId": 1,
+        "chainId": chainID,
         # "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
     }
     
@@ -28,7 +44,7 @@ def create_message(domain_name, message, timestamp):
         "primaryType": "signin",
         "message": {
             "message": message,
-            "timestamp": int(timestamp),
+            "timestamp": timestamp,
         },
     }
 
@@ -41,10 +57,20 @@ def create_message(domain_name, message, timestamp):
 
     return eip712_msg
 
-# Example usage
-# message = "Hello, this is a test message"
-# timestamp = 1234567890  # Example timestamp
-# encoded_msg = eip712_message(message, timestamp)
+def sign_message(message, private_key) -> str:
+    """
+    Sign a message using the EIP-712 message.
 
-# if encoded_msg:
-#     print("Encoded EIP712 Message:", encoded_msg)
+    :param message: The message to sign
+    :type message: SignableMessage
+    :param private_key: The private key to use for signing
+    :type private_key: str
+    :return: The signed message
+    :rtype: str
+    """
+    signed_message = Account.sign_message(message, private_key=private_key)
+    signature = signed_message.signature.hex()
+    if signature.startswith("0x"):
+        return signature
+    else:
+        return "0x" + signature

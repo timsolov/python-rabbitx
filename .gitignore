@@ -1,6 +1,10 @@
 .vscode
+cases/
 .idea
 .env
 venv
+.venv
 data
 __pycache__
+.wallet*
+.apikey

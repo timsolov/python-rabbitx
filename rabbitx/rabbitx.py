@@ -1,48 +1,65 @@
-import requests
+from .consts import *
+from .signer import ApiSigner, EIP712Signer
+from .client import Client
+from .orders import Orders
+from .markets import Markets
+from .account import Account
+from .vaults import Vaults
 
-EIP712_DOMAIN = "RabbitXId"
-EIP712_MESSAGE = "Welcome to RabbitX!\n\nClick to sign in and on-board your wallet for trading perpetuals.\n\nThis request will not trigger a blockchain transaction or cost any gas fees. This signature only proves you are the true owner of this wallet.\n\nBy signing this message you agree to the terms and conditions of the exchange."
+class RabbitX:
+    """
+    RabbitX class.
 
-BASE_URL = "https://api.prod.rabbitx.io"
+    This class is a wrapper around the RabbitX API.
 
-# Onboarding request with wallet and signature
-def onboarding(wallet, signature, timestamp):
-    payload = {
-        "is_client": True,
-        "wallet": wallet,
-        "signature": signature,
-    }
-    headers = {
-        "Content-Type": "application/json",
-        "RBT-PK-TS": str(timestamp),
-        "RBT-TS": str(timestamp),
-    }
-    response = requests.post(
-        url=BASE_URL + "/onboarding",
-        headers=headers, 
-        json=payload
-    )
-    
-    if response.status_code == 200:
-        return response.json()
-    
-    print(response.text)
-    
-    return None
+    Attributes
+    ----------
+    client : Client
+        The client object
+    account : Account
+        The account object
+    orders : Orders
+        The orders object
+    vaults : Vaults
+        The vaults object
+    markets : Markets
+        The markets object
+    """
 
-def account_validate(jwt):
-    headers = {
-        "RBT-JWT": jwt,
-    }
-    
-    response = requests.get(
-        url=BASE_URL + "/account/validate",
-        headers=headers
-    )
-    
-    if response.status_code == 200:
-        return True
-    
-    print(response.text)
-    
-    return False
+    def __init__(self, network:str, wallet_pk:str=None, api_key:str=None, base_url:str=None):
+        """
+        :param network: The network to use (supported: "ethereum", "ethereum-sepolia", "blast", "blast-sepolia")
+        :type network: str
+        :param wallet_pk: The private key of the wallet to use.
+        :type wallet_pk: str
+        :param api_key: The API key to use.
+        :type api_key: str
+        :param base_url: The base URL to override the default base URL for the network.
+        :type base_url: str
+        """
+
+        if wallet_pk and api_key:
+            raise Exception("Cannot provide both wallet_pk and api_key")
+        if not wallet_pk and not api_key:
+            raise Exception("Must provide either wallet_pk or api_key")
+        if network and not network in API_URL:
+            raise ValueError(f'Invalid network: {network}')
+        
+        self.network = network
+            
+        if wallet_pk:
+            self.signer = EIP712Signer(private_key=wallet_pk, chain_id=CHAIN_ID[network], domain=EIP712_DOMAIN[network], message=EIP712_MESSAGE[network])
+        else:
+            self.signer = ApiSigner(api_key=api_key)
+
+        if not base_url:
+            base_url = API_URL[network]
+        
+        self.client = Client(base_url=base_url, signer=self.signer, headers={'EID': EID[network]})
+        
+        self.account = Account(self.client)
+        self.orders = Orders(self.client)
+        self.markets = Markets(self.client)
+        self.vaults = Vaults(self.client)
+
+

@@ -1,0 +1,8 @@
+sphinx  # Core documentation generator
+sphinx-autodoc-typehints  # For rendering type hints in API docs
+sphinx-rtd-theme  # ReadTheDocs theme (set in conf.py)
+
+# Consider pinning versions for reproducibility, e.g.:
+# sphinx==7.2.6
+# sphinx-autodoc-typehints==1.24.0
+# sphinx-rtd-theme==2.0.0
