@@ -18,6 +18,16 @@ A modern, high-performance Python SDK for interacting with the [RabbitX](https:/
 
 ### Installation
 
+It's necessary to install [uv](https://docs.astral.sh/uv/) first.
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/rabbitx-io/python-rabbitx.git
+cd python-rabbitx
+```
+
+2. Install dependencies
 ```bash
 uv sync
 ```
