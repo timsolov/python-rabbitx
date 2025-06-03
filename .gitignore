@@ -1,5 +1,6 @@
 .vscode
 cases/
+docs/_build/
 .idea
 .env
 venv

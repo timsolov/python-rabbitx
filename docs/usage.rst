@@ -8,29 +8,29 @@ The `examples` directory contains scripts demonstrating the most common API endp
 
    * - Script
      - Description
-   * - `auth_api_key.py <../../examples/auth_api_key.py>`_
+   * - :ghfile:`examples/auth_api_key.py`
      - Authenticate using an API key
-   * - `auth_private_key.py <../../examples/auth_private_key.py>`_
+   * - :ghfile:`examples/auth_private_key.py`
      - Authenticate using a private key
-   * - `account_onboarding.py <../../examples/account_onboarding.py>`_
+   * - :ghfile:`examples/account_onboarding.py`
      - Onboard a new account
-   * - `account_positions.py <../../examples/account_positions.py>`_
+   * - :ghfile:`examples/account_positions.py`
      - Retrieve account positions
-   * - `markets_list.py <../../examples/markets_list.py>`_
+   * - :ghfile:`examples/markets_list.py`
      - List all available markets
-   * - `markets_info.py <../../examples/markets_info.py>`_
+   * - :ghfile:`examples/markets_info.py`
      - Get detailed info for a specific market
-   * - `orders_create.py <../../examples/orders_create.py>`_
+   * - :ghfile:`examples/orders_create.py`
      - Create a new order
-   * - `orders_list.py <../../examples/orders_list.py>`_
+   * - :ghfile:`examples/orders_list.py`
      - List all orders
-   * - `orders_amend.py <../../examples/orders_amend.py>`_
+   * - :ghfile:`examples/orders_amend.py`
      - Amend an existing order
-   * - `orders_cancel.py <../../examples/orders_cancel.py>`_
+   * - :ghfile:`examples/orders_cancel.py`
      - Cancel a specific order
-   * - `orders_cancel_all.py <../../examples/orders_cancel_all.py>`_
+   * - :ghfile:`examples/orders_cancel_all.py`
      - Cancel all orders
-   * - `ws_connect.py <../../examples/ws_connect.py>`_
+   * - :ghfile:`examples/ws_connect.py`
      - Connect to the WebSocket API
 
 Each script is self-contained and can be run directly. See the script source for details on required arguments and expected output.

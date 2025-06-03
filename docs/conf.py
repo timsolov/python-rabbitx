@@ -8,9 +8,12 @@ version = release = '1.0.0'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-    'sphinx_autodoc_typehints',
+    # 'sphinx.ext.autosummary',
+    # 'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.extlinks',
+    # 'sphinx_autodoc_typehints',
+    'sphinx_copybutton',
 ]
 
 autodoc_typehints = 'description'
@@ -35,4 +38,8 @@ intersphinx_mapping = {
 # -- Path setup --------------------------------------------------------------
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+extlinks = {
+    'ghfile': ('https://github.com/timsolov/python-rabbitx/blob/main/%s', '%s'),
+}
