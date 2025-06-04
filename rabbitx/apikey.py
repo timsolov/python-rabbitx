@@ -26,32 +26,26 @@ class ApiKey:
 
     def __str__(self):
         return self.key
+    
+    @staticmethod
+    def from_json_file(path:str) -> 'ApiKey':
+        """
+        Read the API key and secret from a JSON file.
 
-def read_from_json_file(path:str) -> ApiKey:
-    """
-    Read the API key and secret from a JSON file.
+        :param path: The path to the JSON file
+        :type path: str
+        :return: The ApiKey object
+        :rtype: ApiKey
 
-    :param path: The path to the JSON file
-    :type path: str
-    :return: The ApiKey object
-    """
-    with open(path, 'r') as f:
-        data = json.load(f)
-        return ApiKey(data['key'], data['secret'], data['publicJwt'], data['privateJwt'])
+        Example:
 
-def new_api_key(key:str, secret:str, public_jwt:str="", private_jwt:str="") -> ApiKey:
-    """
-    Create a new ApiKey object.
+        .. code-block:: python
 
-    :param key: The API key
-    :type key: str
-    :param secret: The API secret
-    :type secret: str
-    :param public_jwt: The public JWT
-    :type public_jwt: str
-    :param private_jwt: The private JWT
-    :type private_jwt: str
-    :return: The ApiKey object
-    :rtype: ApiKey
-    """
-    return ApiKey(key, secret, public_jwt, private_jwt)
+            from rabbitx.apikey import ApiKey
+            api_key = ApiKey.from_json_file('.apikey/apiKey.json')
+            print(api_key)
+        """
+        with open(path, 'r') as f:
+            data = json.load(f)
+            return ApiKey(data['key'], data['secret'], data['publicJwt'], data['privateJwt'])
+
