@@ -1,6 +1,7 @@
 from .channel_handler import ChannelHandler
 from rabbitx.xutils import dict_get_path, dict_has_path
 from typing import Callable
+from websockets.exceptions import ConnectionClosedOK
 from websockets.sync.client import connect
 import json
 import logging
@@ -257,6 +258,9 @@ class WS:
                         self.single_message(msg)
                 else:
                     self.single_message(message)
+        except ConnectionClosedOK as e:
+            logger.error("Connection closed: %s", e)
+            self.disconnect()
         except Exception as e:
             logger.error("Error in consume(): %s", e)
             raise
@@ -296,7 +300,7 @@ class WS:
         self._handler_stop_event.set()
         if self.conn:
             try:
-                self.conn.close()
+                self.disconnect()
             except Exception:
                 pass
         if self._websocket_thread:

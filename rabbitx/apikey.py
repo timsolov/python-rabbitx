@@ -29,7 +29,7 @@ class ApiKey:
         return self.key
 
     @staticmethod
-    def from_json_file(path: str) -> "ApiKey":
+    def from_file(path: str) -> "ApiKey":
         """
         Read the API key and secret from a JSON file.
 

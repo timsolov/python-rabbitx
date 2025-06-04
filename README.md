@@ -46,20 +46,26 @@ Below is a comprehensive example that demonstrates onboarding, real-time market 
 
 ```python
 from rabbitx import RabbitX, consts
-from rabbitx.apikey import read_from_json_file
+from rabbitx.apikey import ApiKey
 
-rabbitx = RabbitX(network=consts.ETHEREUM_MAINNET, api_key=read_from_json_file('.apikey/apiKey.json'))
+rabbitx = RabbitX(
+    network=consts.ETHEREUM_MAINNET, api_key=ApiKey.from_file(".apikey/apiKey.json")
+)
+
+# or if you want to use a private key:
+
+# from rabbitx.wallet import Wallet
+# rabbitx = RabbitX(
+#     network=consts.ETHEREUM_MAINNET, wallet=Wallet.from_file(".wallets/wallet.pk")
+# )
+# rabbitx.account.onboarding()
 
 # Replace with real values as needed
 order = rabbitx.orders.create(
-    market_id="BTC-USD",
-    type="limit",
-    side="long",
-    price=10000,
-    size=0.001
+    market_id="BTC-USD", type="limit", side="long", price=10000, size=0.001
 )
 
-print(f"Order created: {order}") 
+print(f"Order: {order}")
 ```
 
 ---

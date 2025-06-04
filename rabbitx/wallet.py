@@ -5,6 +5,15 @@ Account.enable_unaudited_hdwallet_features()
 
 
 class Wallet:
+    """
+    A wallet object.
+
+    Attributes
+    ----------
+    private_key : str
+        The private key
+    """
+
     def __init__(self, private_key: str):
         self.private_key = private_key
 
@@ -13,9 +22,9 @@ class Wallet:
         """
         Read the private key from a file.
 
-        :param path: The path to the file
-        :type path: str
-        :return: The private key
+        :param private_key_path: The path to the file
+        :type private_key_path: str
+        :return: The wallet object
         :rtype: Wallet
 
         Example:
