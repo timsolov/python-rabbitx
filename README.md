@@ -76,9 +76,11 @@ print(f"Order: {order}")
 
 ```python
 from rabbitx import RabbitX, consts
+from rabbitx.apikey import ApiKey
+
 rabbitx = RabbitX(
     network=consts.ETHEREUM_MAINNET,
-    wallet_pk="<your_private_key>"    # or use api_key="<your_api_key>"
+    api_key=ApiKey.from_file(".apikey/apiKey.json")
 )
 ```
 

@@ -24,9 +24,10 @@ def new_payload(method: str, endpoint: str, params: dict) -> list:
         {"key": key, "value": str(value).lower() if isinstance(value, bool) else value}
         for key, value in sorted(params.items())
     ]
-    payload.extend(
-        [{"key": "method", "value": method}, {"key": "path", "value": endpoint}]
-    )
+    payload.extend([
+        {"key": "method", "value": method},
+        {"key": "path", "value": endpoint},
+    ])
     return payload
 
 

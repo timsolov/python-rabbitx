@@ -12,3 +12,11 @@ dependencies = [
     "ruff>=0.11.12",
     "websockets>=15.0.1",
 ]
+
+[tool.ruff]
+preview = true
+lint.ignore = ["E402"]
+
+[tool.pytest.ini_options]
+timeout = 10
+timeout_method = "thread"
