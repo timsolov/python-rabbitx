@@ -1,7 +1,5 @@
-from typing import Callable
-
 class ChannelHandler:
-    def __init__(self, name:str):
+    def __init__(self, name: str):
         self.name = name
 
     def on_subscribe(self, data: dict):

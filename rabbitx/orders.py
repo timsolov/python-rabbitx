@@ -3,9 +3,33 @@ from rabbitx.client import Client
 from decimal import Decimal
 
 OrderSide = Literal["long", "short"]
-OrderStatus = Literal["processing", "open", "closed", "rejected", "canceled", "canceling", "amending", "cancelingall", "placed"]
-OrderType = Literal["limit", "market", "stop_loss", "take_profit", "stop_loss_limit", "take_profit_limit", "stop_market", "stop_limit", "cancel", "amend"]
-TypeInForce = Literal["good_till_cancel", "immediate_or_cancel", "fill_or_kill", "post_only"]
+OrderStatus = Literal[
+    "processing",
+    "open",
+    "closed",
+    "rejected",
+    "canceled",
+    "canceling",
+    "amending",
+    "cancelingall",
+    "placed",
+]
+OrderType = Literal[
+    "limit",
+    "market",
+    "stop_loss",
+    "take_profit",
+    "stop_loss_limit",
+    "take_profit_limit",
+    "stop_market",
+    "stop_limit",
+    "cancel",
+    "amend",
+]
+TypeInForce = Literal[
+    "good_till_cancel", "immediate_or_cancel", "fill_or_kill", "post_only"
+]
+
 
 class CreateOrderParams(TypedDict):
     market_id: str
@@ -13,8 +37,9 @@ class CreateOrderParams(TypedDict):
     side: OrderSide
     price: Decimal | str | float
     size: Decimal | str | float
-    trigger_price: Optional[Decimal | str | float] 
+    trigger_price: Optional[Decimal | str | float]
     time_in_force: Optional[TypeInForce]
+
 
 class ListOrdersParams(TypedDict):
     market_id: Optional[str] = None
@@ -25,6 +50,7 @@ class ListOrdersParams(TypedDict):
     client_order_id: Optional[str] = None
     order_type: Optional[List[OrderType]] = None
 
+
 class AmendOrderParams(TypedDict):
     order_id: str
     market_id: str
@@ -33,10 +59,12 @@ class AmendOrderParams(TypedDict):
     trigger_price: Optional[Decimal] = None
     size_percent: Optional[Decimal] = None
 
+
 class CancelOrderParams(TypedDict):
     order_id: Optional[str] = None
     client_order_id: Optional[str] = None
     market_id: str
+
 
 class Orders:
     """
@@ -49,15 +77,16 @@ class Orders:
     client : Client
         The client object
     """
-    def __init__(self, client:Client):
+
+    def __init__(self, client: Client):
         self.client = client
 
-    def create(self, **params:CreateOrderParams):
+    def create(self, **params: CreateOrderParams):
         """
         Create a new order
 
         https://docs.rabbitx.com/api-documentation/private-endpoints/orders#place-orders
-        
+
         :param market_id: Market identifier
         :type market_id: str
         :param type: Order type ('limit' or 'market')
@@ -76,9 +105,9 @@ class Orders:
         :rtype: dict
 
         Response:
-        
+
         .. code-block:: python
-            
+
             {
                 "id": "BTC-USD@1191",
                 "market_id": "BTC-USD",
@@ -96,26 +125,29 @@ class Orders:
             }
         """
 
-        if isinstance(params['price'], Decimal) or isinstance(params['price'], str):
-            params['price'] = float(params['price'])
+        if isinstance(params["price"], Decimal) or isinstance(params["price"], str):
+            params["price"] = float(params["price"])
 
-        if isinstance(params['size'], Decimal) or isinstance(params['size'], str):
-            params['size'] = float(params['size'])
+        if isinstance(params["size"], Decimal) or isinstance(params["size"], str):
+            params["size"] = float(params["size"])
 
-        if 'trigger_price' in params and (isinstance(params['trigger_price'], Decimal) or isinstance(params['trigger_price'], str)):
-            params['trigger_price'] = float(params['trigger_price'])
+        if "trigger_price" in params and (
+            isinstance(params["trigger_price"], Decimal)
+            or isinstance(params["trigger_price"], str)
+        ):
+            params["trigger_price"] = float(params["trigger_price"])
 
-        response = self.client.post('/orders', body=params)
+        response = self.client.post("/orders", body=params)
         response.raise_for_status()
         result = response.json()
-        return result['result'][0]
-    
+        return result["result"][0]
+
     def list(self, **params: ListOrdersParams):
         """
         Get list of orders
 
         https://docs.rabbitx.com/api-documentation/private-endpoints/orders#get-account-order-status
-        
+
         :param market_id: Market identifier (required if client_order_id is provided)
         :type market_id: str
         :param start_time: Filter orders after this timestamp (Unix timestamp)
@@ -134,7 +166,7 @@ class Orders:
         :rtype: list
 
         Response:
-        
+
         .. code-block:: python
 
             [
@@ -158,17 +190,17 @@ class Orders:
                 }
             ]
         """
-        response = self.client.get('/orders', params=params if params else None)
+        response = self.client.get("/orders", params=params if params else None)
         response.raise_for_status()
         result = response.json()
-        return result['result']
-    
-    def amend(self, **params:AmendOrderParams):
+        return result["result"]
+
+    def amend(self, **params: AmendOrderParams):
         """
         Amend an existing order
 
         https://docs.rabbitx.com/api-documentation/private-endpoints/orders#amend-orders
-        
+
         :param market_id: Market identifier
         :type market_id: str
         :param order_id: Order identifier
@@ -185,7 +217,7 @@ class Orders:
         :rtype: dict
 
         Response:
-        
+
         .. code-block:: python
 
             {
@@ -197,26 +229,33 @@ class Orders:
             }
         """
 
-        if 'price' in params and (isinstance(params['price'], Decimal) or isinstance(params['price'], str)):
-            params['price'] = float(params['price'])
+        if "price" in params and (
+            isinstance(params["price"], Decimal) or isinstance(params["price"], str)
+        ):
+            params["price"] = float(params["price"])
 
-        if 'size' in params and (isinstance(params['size'], Decimal) or isinstance(params['size'], str)):
-            params['size'] = float(params['size'])
+        if "size" in params and (
+            isinstance(params["size"], Decimal) or isinstance(params["size"], str)
+        ):
+            params["size"] = float(params["size"])
 
-        if 'trigger_price' in params and (isinstance(params['trigger_price'], Decimal) or isinstance(params['trigger_price'], str)):
-            params['trigger_price'] = float(params['trigger_price'])
+        if "trigger_price" in params and (
+            isinstance(params["trigger_price"], Decimal)
+            or isinstance(params["trigger_price"], str)
+        ):
+            params["trigger_price"] = float(params["trigger_price"])
 
-        response = self.client.put('/orders', body=params)
+        response = self.client.put("/orders", body=params)
         response.raise_for_status()
         result = response.json()
-        return result['result'][0]
-    
+        return result["result"][0]
+
     def cancel(self, **params: CancelOrderParams):
         """
         Cancel specific order
 
         https://docs.rabbitx.com/api-documentation/private-endpoints/orders#cancel-orders
-        
+
         :param market_id: Market identifier
         :type market_id: str
         :param order_id: Optional order identifier
@@ -227,7 +266,7 @@ class Orders:
         :rtype: dict
 
         Response:
-        
+
         .. code-block:: python
 
             {
@@ -238,16 +277,16 @@ class Orders:
                 "client_order_id": ""
             }
         """
-        response = self.client.delete('/orders', body=params)
+        response = self.client.delete("/orders", body=params)
         response.raise_for_status()
         result = response.json()
-        return result['result'][0]
-    
+        return result["result"][0]
+
     def cancel_all(self):
         """Cancel all open orders
-        
+
         https://docs.rabbitx.com/api-documentation/private-endpoints/orders#cancel-all-orders
-        
+
         :return: The result of the cancellation
         :rtype: bool
 
@@ -257,8 +296,7 @@ class Orders:
 
             true
         """
-        response = self.client.delete('/orders/cancel_all', body={})
+        response = self.client.delete("/orders/cancel_all", body={})
         response.raise_for_status()
         result = response.json()
-        return bool(result['result'][0])
-    
+        return bool(result["result"][0])

@@ -1,5 +1,6 @@
 import json
 
+
 class ApiKey:
     """
     ApiKey class.
@@ -26,9 +27,9 @@ class ApiKey:
 
     def __str__(self):
         return self.key
-    
+
     @staticmethod
-    def from_json_file(path:str) -> 'ApiKey':
+    def from_json_file(path: str) -> "ApiKey":
         """
         Read the API key and secret from a JSON file.
 
@@ -45,7 +46,8 @@ class ApiKey:
             api_key = ApiKey.from_json_file('.apikey/apiKey.json')
             print(api_key)
         """
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             data = json.load(f)
-            return ApiKey(data['key'], data['secret'], data['publicJwt'], data['privateJwt'])
-
+            return ApiKey(
+                data["key"], data["secret"], data["publicJwt"], data["privateJwt"]
+            )

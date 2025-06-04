@@ -1,6 +1,7 @@
 from typing import Callable
 from .channel_handler import ChannelHandler
 
+
 class Positions(ChannelHandler):
     def __init__(self, on_update: Callable[[str, dict], None] = None):
         """
@@ -24,15 +25,15 @@ class Positions(ChannelHandler):
         :param data: The data to consume. data['positions'] is a list of positions.
         :type data: dict
         """
-        if not 'positions' in data:
+        if "positions" not in data:
             return
-        
-        for position in data['positions']:
-            if not 'market_id' in position:
+
+        for position in data["positions"]:
+            if "market_id" not in position:
                 continue
-            market_id = position['market_id']
+            market_id = position["market_id"]
             self.positions[market_id] = position
-            if float(position['size']) == 0:
+            if float(position["size"]) == 0:
                 del self.positions[market_id]
             if self.on_update:
                 self.on_update(market_id, position)
@@ -47,7 +48,7 @@ class Positions(ChannelHandler):
         :rtype: dict | None
         """
         return self.positions.get(market_id, None)
-    
+
     def get_positions(self) -> dict:
         """
         Get all positions

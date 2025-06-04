@@ -3,12 +3,13 @@ from .xutils import read_file
 
 Account.enable_unaudited_hdwallet_features()
 
+
 class Wallet:
-    def __init__(self, private_key:str):
+    def __init__(self, private_key: str):
         self.private_key = private_key
 
     @staticmethod
-    def from_file(private_key_path:str) -> 'Wallet':
+    def from_file(private_key_path: str) -> "Wallet":
         """
         Read the private key from a file.
 
@@ -16,7 +17,7 @@ class Wallet:
         :type path: str
         :return: The private key
         :rtype: Wallet
-        
+
         Example:
 
         .. code-block:: python
@@ -28,7 +29,7 @@ class Wallet:
         return Wallet(read_file(private_key_path).strip())
 
     @staticmethod
-    def from_mnemonic(mnemonic:str) -> 'Wallet':
+    def from_mnemonic(mnemonic: str) -> "Wallet":
         """
         Get the private key from a mnemonic phrase.
 

@@ -1,8 +1,10 @@
 from eth_account import Account
-from eth_account.messages import SignableMessage
-from eth_account.messages import encode_typed_data, SignableMessage
+from eth_account.messages import SignableMessage, encode_typed_data
 
-def eip712_message(chainID:int, timestamp:int, domain:str, message:str) -> SignableMessage:
+
+def eip712_message(
+    chainID: int, timestamp: int, domain: str, message: str
+) -> SignableMessage:
     """
     Create an EIP-712 message.
 
@@ -17,7 +19,7 @@ def eip712_message(chainID:int, timestamp:int, domain:str, message:str) -> Signa
     :return: The EIP-712 message
     :rtype: SignableMessage
     """
-    
+
     EIP712_TYPES = {
         "EIP712Domain": [
             {"name": "name", "type": "string"},
@@ -28,16 +30,16 @@ def eip712_message(chainID:int, timestamp:int, domain:str, message:str) -> Signa
         "signin": [
             {"name": "message", "type": "string"},
             {"name": "timestamp", "type": "uint256"},
-        ]
+        ],
     }
-    
+
     EIP712_DOMAIN = {
         "name": domain,
         "version": "1",
         "chainId": chainID,
         # "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
     }
-    
+
     structured_data = {
         "types": EIP712_TYPES,
         "domain": EIP712_DOMAIN,
@@ -56,6 +58,7 @@ def eip712_message(chainID:int, timestamp:int, domain:str, message:str) -> Signa
         return None
 
     return eip712_msg
+
 
 def sign_message(message, private_key) -> str:
     """

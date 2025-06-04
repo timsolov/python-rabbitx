@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+
 def get_current_time():
     """
     Get the current time.
@@ -8,6 +9,7 @@ def get_current_time():
     :rtype: datetime
     """
     return datetime.now(timezone.utc)
+
 
 def get_current_timestamp():
     """

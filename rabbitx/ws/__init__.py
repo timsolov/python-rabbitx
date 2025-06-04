@@ -5,10 +5,10 @@ from .orderbook import Orderbook
 from .positions import Positions
 
 __all__ = [
-    'WS', 
-    'ChannelHandler',
-    'OpenedOrders',
-    'Orderbook',
-    'OpenedOrders',
-    'Positions',
+    "WS",
+    "ChannelHandler",
+    "OpenedOrders",
+    "Orderbook",
+    "OpenedOrders",
+    "Positions",
 ]

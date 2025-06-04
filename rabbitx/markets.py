@@ -1,5 +1,5 @@
-import requests
 from rabbitx.client import Client
+
 
 class Markets:
     """
@@ -12,10 +12,11 @@ class Markets:
     client : Client
         The client object
     """
+
     def __init__(self, client: Client):
         self.client = client
 
-    def info(self, market_id:str):
+    def info(self, market_id: str):
         """
         Get market info
 
@@ -27,7 +28,7 @@ class Markets:
         :rtype: dict
 
         Response:
-        
+
         .. code-block:: python
 
             {
@@ -64,11 +65,11 @@ class Markets:
                 "market_cap": "2067876760453"
             }
         """
-        response = self.client.get(f'/markets', params={'market_id': market_id})
+        response = self.client.get("/markets", params={"market_id": market_id})
         response.raise_for_status()
         result = response.json()
-        return result['result'][0]
-    
+        return result["result"][0]
+
     def list(self):
         """
         Get list of markets
@@ -79,7 +80,7 @@ class Markets:
         :rtype: list
 
         Response:
-        
+
         .. code-block:: python
 
             [
@@ -116,9 +117,9 @@ class Markets:
                     "average_daily_volume_change_basis": "-0.90909090909090909091",
                     "market_cap": "2067876760453"
                 }
-            ]   
+            ]
         """
-        response = self.client.get('/markets')
+        response = self.client.get("/markets")
         response.raise_for_status()
         result = response.json()
-        return result['result']
+        return result["result"]

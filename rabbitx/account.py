@@ -1,6 +1,7 @@
 from rabbitx.client import Client
 from rabbitx.signer import JWTTokenSigner, EIP712Signer
 
+
 class Account:
     """
     Account class.
@@ -12,6 +13,7 @@ class Account:
     client : Client
         The client object
     """
+
     def __init__(self, client: Client):
         self.client = client
 
@@ -23,9 +25,9 @@ class Account:
         :rtype: dict
 
         Response:
-        
+
         .. code-block:: python
-            
+
             {
                 "profile": {
                     "id": 88889,
@@ -107,22 +109,22 @@ class Account:
             "signature": signature,
         }
 
-        response = self.client.post('/onboarding', body=request, headers=headers)
+        response = self.client.post("/onboarding", body=request, headers=headers)
         response.raise_for_status()
         result = response.json()
 
-        jwt_token = result['result'][0]['jwt']
-        refresh_token = result['result'][0]['refreshToken']
-        random_secret = result['result'][0]['randomSecret']
+        jwt_token = result["result"][0]["jwt"]
+        refresh_token = result["result"][0]["refreshToken"]
+        random_secret = result["result"][0]["randomSecret"]
 
         self.client.signer = JWTTokenSigner(jwt_token, refresh_token, random_secret)
 
-        return result['result'][0]
+        return result["result"][0]
 
     def renew_jwt_token(self):
         """
-        Renew the JWT token. 
-        
+        Renew the JWT token.
+
         It replaces the current signer with a new one if the signer is a JWTTokenSigner or EIP712Signer.
 
         :return: The new JWT token
@@ -131,31 +133,31 @@ class Account:
         Response:
 
         .. code-block:: python
-            
+
             {
                 "jwt": "new_jwt_token"
             }
         """
 
-        is_client = isinstance(self.client.signer, JWTTokenSigner) or isinstance(self.client.signer, EIP712Signer)
+        is_client = isinstance(self.client.signer, JWTTokenSigner) or isinstance(
+            self.client.signer, EIP712Signer
+        )
 
-        body = {
-            "is_client": is_client
-        }
+        body = {"is_client": is_client}
 
         if is_client:
-            body['refresh_token'] = self.client.signer.refresh_token
+            body["refresh_token"] = self.client.signer.refresh_token
 
-        response = self.client.post('/jwt', body=body)
+        response = self.client.post("/jwt", body=body)
         response.raise_for_status()
-        result = response.json()['result'][0]
+        result = response.json()["result"][0]
 
         if is_client:
-            self.client.signer = JWTTokenSigner(result['jwt'], result['refresh_token'], result['random_secret'])
+            self.client.signer = JWTTokenSigner(
+                result["jwt"], result["refresh_token"], result["random_secret"]
+            )
 
-        return {
-            "jwt": result['jwt']
-        }
+        return {"jwt": result["jwt"]}
 
     def positions(self):
         """
@@ -165,9 +167,9 @@ class Account:
         :rtype: list
 
         Response:
-        
+
         .. code-block:: python
-            
+
             [
                 {
                     "id": "pos-BTC-USD-tr-88889",
@@ -185,9 +187,8 @@ class Account:
             ]
         """
 
-        response = self.client.get('/positions')
+        response = self.client.get("/positions")
         response.raise_for_status()
         result = response.json()
-        
-        return result['result']
 
+        return result["result"]

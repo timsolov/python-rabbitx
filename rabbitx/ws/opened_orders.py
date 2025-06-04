@@ -1,6 +1,7 @@
 from typing import Callable
 from .channel_handler import ChannelHandler
 
+
 class OpenedOrders(ChannelHandler):
     orders: dict
     on_update: Callable
@@ -26,23 +27,23 @@ class OpenedOrders(ChannelHandler):
         :param data: The data to consume. data['orders'] is a list of orders.
         :type data: dict
         """
-        if not 'orders' in data:
+        if "orders" not in data:
             return
-        
-        for order in data['orders']:
-            if not 'market_id' in order or not 'id' in order:
+
+        for order in data["orders"]:
+            if "market_id" not in order or "id" not in order:
                 continue
 
-            market_id = order['market_id']
-            order_id = order['id']
+            market_id = order["market_id"]
+            order_id = order["id"]
 
-            if not market_id in self.orders:
+            if market_id not in self.orders:
                 self.orders[market_id] = {}
 
-            if not order_id in self.orders[market_id]:
+            if order_id not in self.orders[market_id]:
                 self.orders[market_id][order_id] = order
-                
-            if order['status'] in ['closed', 'rejected', 'canceled', 'canceling']:
+
+            if order["status"] in ["closed", "rejected", "canceled", "canceling"]:
                 del self.orders[market_id][order_id]
             else:
                 self.orders[market_id][order_id] = order
@@ -62,7 +63,7 @@ class OpenedOrders(ChannelHandler):
             for order_id in self.orders[market_id]:
                 orders.append(self.orders[market_id][order_id])
         return orders
-    
+
     def get_order(self, market_id: str, order_id: str) -> dict | None:
         """
         Get an order by market_id and order_id
@@ -74,7 +75,7 @@ class OpenedOrders(ChannelHandler):
         :return: The order
         :rtype: dict | None
         """
-        
+
         return self.orders.get(market_id, {}).get(order_id, None)
 
     def on_subscribe(self, data: dict):

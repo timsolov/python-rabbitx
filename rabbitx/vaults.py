@@ -1,5 +1,6 @@
-from typing import TypedDict, Literal, Optional, List
+from typing import Literal, List
 from rabbitx.client import Client
+
 
 class Vaults:
     """
@@ -12,12 +13,13 @@ class Vaults:
     client : Client
         The client object
     """
-    def __init__(self, client:Client):
+
+    def __init__(self, client: Client):
         self.client = client
 
     def list(self):
         """Get list of vaults
-        
+
         :return: List of vaults
 
         Response:
@@ -41,14 +43,14 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get('/vaults')
+        response = self.client.get("/vaults")
         response.raise_for_status()
         result = response.json()
-        return result['result']
+        return result["result"]
 
     def holdings(self, vault_profile_id: int = None):
         """Get holdings in vaults for current profile
-        
+
         :param vault_profile_id: Vault profile ID (optional)
         :type vault_profile_id: int
         :return: Holdings in vaults for current profile
@@ -74,14 +76,17 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(f'/vaults/holdings', params={'vault_profile_id': vault_profile_id} if vault_profile_id else None)
+        response = self.client.get(
+            "/vaults/holdings",
+            params={"vault_profile_id": vault_profile_id} if vault_profile_id else None,
+        )
         response.raise_for_status()
         result = response.json()
-        return result['result']
-    
+        return result["result"]
+
     def all_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
         """Get all balance operations
-        
+
         :param ops_types: List of operation types to filter by (required) ['stake', 'unstake']
         :param vault_profile_id: Vault profile ID (optional)
         :return: All balance operations
@@ -112,13 +117,18 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get('/vaults/all-balanceops', params={'ops_type': ops_types, 'vault_profile_id': vault_profile_id} if ops_types or vault_profile_id else None)
+        response = self.client.get(
+            "/vaults/all-balanceops",
+            params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
+            if ops_types or vault_profile_id
+            else None,
+        )
         response.raise_for_status()
         return response.json()
-    
+
     def user_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
         """Get user balance operations
-        
+
         :param ops_types: List of operation types to filter by (required) ['stake', 'unstake']
         :param vault_profile_id: Vault profile ID (optional)
         :return: User balance operations
@@ -149,14 +159,24 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get('/vaults/balanceops', params={'ops_type': ops_types, 'vault_profile_id': vault_profile_id} if ops_types or vault_profile_id else None)
+        response = self.client.get(
+            "/vaults/balanceops",
+            params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
+            if ops_types or vault_profile_id
+            else None,
+        )
         response.raise_for_status()
         result = response.json()
-        return result['result']
-    
-    def history(self, vault_profile_id: int, type: Literal['share_price', 'nav']='nav', range: Literal['1h', '1d', '1w', '1m', '1y', 'all']='1d'):
+        return result["result"]
+
+    def history(
+        self,
+        vault_profile_id: int,
+        type: Literal["share_price", "nav"] = "nav",
+        range: Literal["1h", "1d", "1w", "1m", "1y", "all"] = "1d",
+    ):
         """Get history of a vault
-        
+
         :param vault_profile_id: Vault profile ID (required)
         :param type: Type of history to get (optional), default is 'nav' ['share_price', 'nav']
         :param range: Range of history to get (optional), default is '1d' ['1h', '1d', '1w', '1m', '1y', 'all']
@@ -177,14 +197,19 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(f'/vaults/history', params={'vault_profile_id': vault_profile_id, 'type': type, 'range': range})
+        response = self.client.get(
+            "/vaults/history",
+            params={"vault_profile_id": vault_profile_id, "type": type, "range": range},
+        )
         response.raise_for_status()
         result = response.json()
-        return result['result']
-    
-    def fills(self, vault_profile_id: int, start_time: int = None, end_time: int = None):
+        return result["result"]
+
+    def fills(
+        self, vault_profile_id: int, start_time: int = None, end_time: int = None
+    ):
         """Get fills for a vault
-        
+
         :param vault_profile_id: Vault profile ID (required)
         :param start_time: Start time (optional)
         :param end_time: End time (optional)
@@ -212,14 +237,23 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(f'/vaults/fills', params={'vault_profile_id': vault_profile_id, 'start_time': start_time, 'end_time': end_time})
+        response = self.client.get(
+            "/vaults/fills",
+            params={
+                "vault_profile_id": vault_profile_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            },
+        )
         response.raise_for_status()
         result = response.json()
-        return result['result']
-    
-    def funding(self, vault_profile_id: int, start_time: int = None, end_time: int = None):
+        return result["result"]
+
+    def funding(
+        self, vault_profile_id: int, start_time: int = None, end_time: int = None
+    ):
         """Get funding for a vault
-        
+
         :param vault_profile_id: Vault profile ID (required)
         :param start_time: Start time (optional)
         :param end_time: End time (optional)
@@ -246,7 +280,14 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(f'/vaults/funding', params={'vault_profile_id': vault_profile_id, 'start_time': start_time, 'end_time': end_time})
+        response = self.client.get(
+            "/vaults/funding",
+            params={
+                "vault_profile_id": vault_profile_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            },
+        )
         response.raise_for_status()
         result = response.json()
-        return result['result']
+        return result["result"]
