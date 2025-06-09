@@ -1,5 +1,5 @@
 from typing import Literal, List
-from rabbitx.client import Client
+from .transport import Transport
 
 
 class Vaults:
@@ -10,12 +10,12 @@ class Vaults:
 
     Attributes
     ----------
-    client : Client
-        The client object
+    transport : Transport
+        The transport object
     """
 
-    def __init__(self, client: Client):
-        self.client = client
+    def __init__(self, transport: Transport):
+        self.transport = transport
 
     def list(self):
         """Get list of vaults
@@ -43,7 +43,7 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get("/vaults")
+        response = self.transport.get("/vaults")
         response.raise_for_status()
         result = response.json()
         return result["result"]
@@ -76,7 +76,7 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(
+        response = self.transport.get(
             "/vaults/holdings",
             params={"vault_profile_id": vault_profile_id} if vault_profile_id else None,
         )
@@ -117,7 +117,7 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(
+        response = self.transport.get(
             "/vaults/all-balanceops",
             params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
             if ops_types or vault_profile_id
@@ -159,7 +159,7 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(
+        response = self.transport.get(
             "/vaults/balanceops",
             params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
             if ops_types or vault_profile_id
@@ -197,7 +197,7 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(
+        response = self.transport.get(
             "/vaults/history",
             params={"vault_profile_id": vault_profile_id, "type": type, "range": range},
         )
@@ -237,7 +237,7 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(
+        response = self.transport.get(
             "/vaults/fills",
             params={
                 "vault_profile_id": vault_profile_id,
@@ -280,7 +280,7 @@ class Vaults:
                 }
             ]
         """
-        response = self.client.get(
+        response = self.transport.get(
             "/vaults/funding",
             params={
                 "vault_profile_id": vault_profile_id,

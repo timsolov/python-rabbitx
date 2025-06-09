@@ -1,5 +1,5 @@
 from typing import TypedDict, Literal, Optional, List
-from rabbitx.client import Client
+from .transport import Transport
 from decimal import Decimal
 
 OrderSide = Literal["long", "short"]
@@ -74,12 +74,12 @@ class Orders:
 
     Attributes
     ----------
-    client : Client
-        The client object
+    transport : Transport
+        The transport object
     """
 
-    def __init__(self, client: Client):
-        self.client = client
+    def __init__(self, transport: Transport):
+        self.transport = transport
 
     def create(self, **params: CreateOrderParams):
         """
@@ -137,7 +137,7 @@ class Orders:
         ):
             params["trigger_price"] = float(params["trigger_price"])
 
-        response = self.client.post("/orders", body=params)
+        response = self.transport.post("/orders", body=params)
         response.raise_for_status()
         result = response.json()
         return result["result"][0]
@@ -190,7 +190,7 @@ class Orders:
                 }
             ]
         """
-        response = self.client.get("/orders", params=params if params else None)
+        response = self.transport.get("/orders", params=params if params else None)
         response.raise_for_status()
         result = response.json()
         return result["result"]
@@ -245,7 +245,7 @@ class Orders:
         ):
             params["trigger_price"] = float(params["trigger_price"])
 
-        response = self.client.put("/orders", body=params)
+        response = self.transport.put("/orders", body=params)
         response.raise_for_status()
         result = response.json()
         return result["result"][0]
@@ -277,7 +277,7 @@ class Orders:
                 "client_order_id": ""
             }
         """
-        response = self.client.delete("/orders", body=params)
+        response = self.transport.delete("/orders", body=params)
         response.raise_for_status()
         result = response.json()
         return result["result"][0]
@@ -296,7 +296,7 @@ class Orders:
 
             true
         """
-        response = self.client.delete("/orders/cancel_all", body={})
+        response = self.transport.delete("/orders/cancel_all", body={})
         response.raise_for_status()
         result = response.json()
         return bool(result["result"][0])

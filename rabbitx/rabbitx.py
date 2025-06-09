@@ -2,7 +2,7 @@ from .consts import API_URL, CHAIN_ID, EIP712_DOMAIN, EIP712_MESSAGE, EID
 from .apikey import ApiKey
 from .wallet import Wallet
 from .signer import ApiSigner, EIP712Signer
-from .client import Client
+from .transport import Transport
 from .orders import Orders
 from .markets import Markets
 from .account import Account
@@ -17,8 +17,8 @@ class RabbitX:
 
     Attributes
     ----------
-    client : Client
-        The client object
+    transport : Transport
+        The transport object
     account : Account
         The account object
     orders : Orders
@@ -69,11 +69,11 @@ class RabbitX:
         if not base_url:
             base_url = API_URL[network]
 
-        self.client = Client(
+        self.transport = Transport(
             base_url=base_url, signer=self.signer, headers={"EID": EID[network]}
         )
 
-        self.account = Account(self.client)
-        self.orders = Orders(self.client)
-        self.markets = Markets(self.client)
-        self.vaults = Vaults(self.client)
+        self.account = Account(self.transport)
+        self.orders = Orders(self.transport)
+        self.markets = Markets(self.transport)
+        self.vaults = Vaults(self.transport)

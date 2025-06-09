@@ -37,11 +37,11 @@ class CustomEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-class Client:
+class Transport:
     """
-    Client class.
+    Transport class.
 
-    This class is a wrapper around the RabbitX client.
+    This class is a wrapper around the RabbitX transport.
 
     Attributes
     ----------

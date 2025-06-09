@@ -1,4 +1,4 @@
-from rabbitx.client import Client
+from .transport import Transport
 
 
 class Markets:
@@ -9,12 +9,12 @@ class Markets:
 
     Attributes
     ----------
-    client : Client
-        The client object
+    transport : Transport
+        The transport object
     """
 
-    def __init__(self, client: Client):
-        self.client = client
+    def __init__(self, transport: Transport):
+        self.transport = transport
 
     def info(self, market_id: str):
         """
@@ -65,7 +65,7 @@ class Markets:
                 "market_cap": "2067876760453"
             }
         """
-        response = self.client.get("/markets", params={"market_id": market_id})
+        response = self.transport.get("/markets", params={"market_id": market_id})
         response.raise_for_status()
         result = response.json()
         return result["result"][0]
@@ -119,7 +119,7 @@ class Markets:
                 }
             ]
         """
-        response = self.client.get("/markets")
+        response = self.transport.get("/markets")
         response.raise_for_status()
         result = response.json()
         return result["result"]
