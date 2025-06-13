@@ -59,7 +59,6 @@ def payload_hash(timestamp: int, payload: list) -> str:
     encoded_message = message.encode("utf-8")
     return "0x" + hashlib.sha256(encoded_message).hexdigest()
 
-
 def rbt_signature(payload: str, random_secret: str) -> str:
     """
     Computes the RBT signature (SHA-256 HMAC) using the provided secret.

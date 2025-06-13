@@ -17,6 +17,7 @@ dependencies = [
 preview = true
 lint.ignore = ["E402"]
 
-[tool.pytest.ini_options]
-timeout = 10
-timeout_method = "thread"
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+]

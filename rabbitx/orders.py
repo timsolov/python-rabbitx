@@ -1,6 +1,7 @@
 from typing import TypedDict, Literal, Optional, List
 from .transport import Transport
 from decimal import Decimal
+from .response import single_or_fail, multiple_or_fail, SingleResponse, MultipleResponse
 
 OrderSide = Literal["long", "short"]
 OrderStatus = Literal[
@@ -102,7 +103,7 @@ class Orders:
         :param time_in_force: Optional time in force parameter ('good_till_cancel', 'immediate_or_cancel', 'fill_or_kill', 'post_only')
         :type time_in_force: TypeInForce
         :return: The created order
-        :rtype: dict
+        :rtype: SingleResponse
 
         Response:
 
@@ -139,8 +140,7 @@ class Orders:
 
         response = self.transport.post("/orders", body=params)
         response.raise_for_status()
-        result = response.json()
-        return result["result"][0]
+        return single_or_fail(response.json())
 
     def list(self, **params: ListOrdersParams):
         """
@@ -163,7 +163,7 @@ class Orders:
         :param order_type: Filter by order types
         :type order_type: List[OrderType]
         :return: The list of orders
-        :rtype: list
+        :rtype: MultipleResponse
 
         Response:
 
@@ -192,8 +192,7 @@ class Orders:
         """
         response = self.transport.get("/orders", params=params if params else None)
         response.raise_for_status()
-        result = response.json()
-        return result["result"]
+        return multiple_or_fail(response.json())
 
     def amend(self, **params: AmendOrderParams):
         """
@@ -214,7 +213,7 @@ class Orders:
         :param size_percent: Optional new size percentage
         :type size_percent: Decimal | str | float
         :return: The amended order
-        :rtype: dict
+        :rtype: SingleResponse
 
         Response:
 
@@ -247,8 +246,7 @@ class Orders:
 
         response = self.transport.put("/orders", body=params)
         response.raise_for_status()
-        result = response.json()
-        return result["result"][0]
+        return single_or_fail(response.json())
 
     def cancel(self, **params: CancelOrderParams):
         """
@@ -263,7 +261,7 @@ class Orders:
         :param client_order_id: Optional client order identifier
         :type client_order_id: str
         :return: The canceled order
-        :rtype: dict
+        :rtype: SingleResponse
 
         Response:
 
@@ -279,8 +277,7 @@ class Orders:
         """
         response = self.transport.delete("/orders", body=params)
         response.raise_for_status()
-        result = response.json()
-        return result["result"][0]
+        return single_or_fail(response.json())
 
     def cancel_all(self):
         """Cancel all open orders
@@ -298,5 +295,4 @@ class Orders:
         """
         response = self.transport.delete("/orders/cancel_all", body={})
         response.raise_for_status()
-        result = response.json()
-        return bool(result["result"][0])
+        return single_or_fail(response.json())

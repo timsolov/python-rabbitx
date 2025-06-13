@@ -55,4 +55,13 @@ class Wallet:
             wallet = Wallet.from_mnemonic("your mnemonic phrase")
             print(wallet)
         """
-        return Account.from_mnemonic(mnemonic).key.hex()
+        return Wallet(Account.from_mnemonic(mnemonic).key.hex())
+
+    def address(self) -> str:
+        """
+        Get the wallet address
+
+        :return: The wallet address
+        :rtype: str
+        """
+        return Account.from_key(self.private_key).address

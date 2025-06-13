@@ -245,12 +245,18 @@ class WS:
         """
         try:
             while not self._websocket_stop_event.is_set():
-                message = self.conn.recv()
+                try:
+                    message = self.conn.recv(timeout=1)
+                except TimeoutError:
+                    continue
+
                 if DEBUG:
                     logger.debug("Received message: %s", message)
+                
                 if message == "{}":
                     self.send("{}")
                     continue
+
                 if "\n" in message:
                     for msg in message.split("\n"):
                         if msg.strip() == "":
