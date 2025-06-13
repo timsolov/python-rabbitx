@@ -4,6 +4,7 @@ import json
 import os
 import urllib3
 from decimal import Decimal
+import logging
 
 urllib3.disable_warnings()
 
@@ -13,14 +14,13 @@ if DEBUG:
     import http.client as http_client
 
     http_client.HTTPConnection.debuglevel = 1
-    import logging
 
-    logging.basicConfig()
-    logging.getLogger().setLevel(logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG)
     requests_log = logging.getLogger("requests.packages.urllib3")
     requests_log.setLevel(logging.DEBUG)
     requests_log.propagate = True
 
+logger = logging.getLogger("rabbitx.transport")
 
 class CustomEncoder(json.JSONEncoder):
     """
@@ -80,6 +80,9 @@ class Transport:
             params=params,
             verify=False,
         )
+
+        if DEBUG:
+            logger.debug(f"Response: {response.text}")
 
         return response
 
