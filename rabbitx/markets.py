@@ -1,4 +1,5 @@
-from .transport import Transport
+from .transport import Transport, SyncTransport, AsyncTransport
+from .response import SingleResponse, MultipleResponse, single_or_fail, multiple_or_fail
 
 
 class Markets:
@@ -25,7 +26,7 @@ class Markets:
         :param market_id: Market ID (e.g. 'BTC-USD')
         :type market_id: str
         :return: The market info
-        :rtype: dict
+        :rtype: SingleResponse
 
         Response:
 
@@ -67,8 +68,7 @@ class Markets:
         """
         response = self.transport.get("/markets", params={"market_id": market_id})
         response.raise_for_status()
-        result = response.json()
-        return result["result"][0]
+        return single_or_fail(response.json())
 
     def list(self):
         """
@@ -77,7 +77,7 @@ class Markets:
         https://docs.rabbitx.com/api-documentation/public-endpoints/market-info#market-info
 
         :return: The list of markets
-        :rtype: list
+        :rtype: MultipleResponse
 
         Response:
 
@@ -121,5 +121,25 @@ class Markets:
         """
         response = self.transport.get("/markets")
         response.raise_for_status()
-        result = response.json()
-        return result["result"]
+        return multiple_or_fail(response.json())
+
+
+class AsyncMarkets:
+    __doc__ = Markets.__doc__
+
+    def __init__(self, transport: AsyncTransport):
+        self.transport = transport
+
+    async def info(self, market_id: str):
+        response = await self.transport.get("/markets", params={"market_id": market_id})
+        response.raise_for_status()
+        return single_or_fail(response.json())
+    
+    info.__doc__ = Markets.info.__doc__
+
+    async def list(self):
+        response = await self.transport.get("/markets")
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+    
+    list.__doc__ = Markets.list.__doc__
