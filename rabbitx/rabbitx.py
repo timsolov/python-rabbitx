@@ -2,11 +2,11 @@ from .consts import API_URL, CHAIN_ID, EIP712_DOMAIN, EIP712_MESSAGE, EID
 from .apikey import ApiKey
 from .wallet import Wallet
 from .signer import ApiSigner, EIP712Signer
-from .transport import SyncTransport
-from .orders import Orders
-from .markets import Markets
-from .account import Account
-from .vaults import Vaults
+from .transport import SyncTransport, AsyncTransport
+from .orders import Orders, AsyncOrders
+from .markets import Markets, AsyncMarkets
+from .account import Account, AsyncAccount
+from .vaults import Vaults, AsyncVaults
 
 
 class RabbitX:
@@ -98,3 +98,17 @@ class RabbitX:
             raise ValueError(f"Unknown network: {network}")
 
 
+class AsyncRabbitX(RabbitX):
+    __doc__ = RabbitX.__doc__
+
+    def __init__(self, network: str, wallet: Wallet | None = None, api_key: ApiKey | None = None, base_url: str | None = None):
+        super().__init__(network, wallet, api_key, base_url)
+
+        self.transport = AsyncTransport(
+            base_url=base_url, signer=self.signer, headers={"EID": EID[network]}
+        )
+
+        self.account = AsyncAccount(self.transport)
+        self.orders = AsyncOrders(self.transport)
+        self.markets = AsyncMarkets(self.transport)
+        self.vaults = AsyncVaults(self.transport)
