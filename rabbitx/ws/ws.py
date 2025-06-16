@@ -252,7 +252,7 @@ class WS:
 
                 if DEBUG:
                     logger.debug("Received message: %s", message)
-                
+
                 if message == "{}":
                     self.send("{}")
                     continue

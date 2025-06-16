@@ -22,6 +22,7 @@ if DEBUG:
 
 logger = logging.getLogger("rabbitx.transport")
 
+
 class CustomEncoder(json.JSONEncoder):
     """
     Custom encoder for the JSON library.
