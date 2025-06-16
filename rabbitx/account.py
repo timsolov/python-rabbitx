@@ -1,5 +1,6 @@
-from .transport import Transport
+from .transport import Transport, SyncTransport, AsyncTransport
 from .signer import JWTTokenSigner, EIP712Signer
+from .response import SingleResponse, MultipleResponse, single_or_fail, multiple_or_fail
 
 
 class Account:
@@ -22,7 +23,7 @@ class Account:
         Onboard a new user or login an existing user
 
         :return: The onboarding result
-        :rtype: dict
+        :rtype: SingleResponse
 
         Response:
 
@@ -111,15 +112,16 @@ class Account:
 
         response = self.transport.post("/onboarding", body=request, headers=headers)
         response.raise_for_status()
-        result = response.json()
+        result = single_or_fail(response.json())
 
-        jwt_token = result["result"][0]["jwt"]
-        refresh_token = result["result"][0]["refreshToken"]
-        random_secret = result["result"][0]["randomSecret"]
+        data = result.result()
+        jwt_token = data["jwt"]
+        refresh_token = data["refreshToken"]
+        random_secret = data["randomSecret"]
 
         self.transport.signer = JWTTokenSigner(jwt_token, refresh_token, random_secret)
 
-        return result["result"][0]
+        return result
 
     def renew_jwt_token(self):
         """
@@ -128,7 +130,7 @@ class Account:
         It replaces the current signer with a new one if the signer is a JWTTokenSigner or EIP712Signer.
 
         :return: The new JWT token
-        :rtype: dict
+        :rtype: SingleResponse
 
         Response:
 
@@ -150,21 +152,22 @@ class Account:
 
         response = self.transport.post("/jwt", body=body)
         response.raise_for_status()
-        result = response.json()["result"][0]
+        result = single_or_fail(response.json())
+        data = result.result()  
 
         if is_client:
             self.transport.signer = JWTTokenSigner(
-                result["jwt"], result["refresh_token"], result["random_secret"]
+                data["jwt"], data["refresh_token"], data["random_secret"]
             )
 
-        return {"jwt": result["jwt"]}
+        return result
 
     def positions(self):
         """
         Get all positions
 
         :return: The positions
-        :rtype: list
+        :rtype: MultipleResponse
 
         Response:
 
@@ -189,6 +192,70 @@ class Account:
 
         response = self.transport.get("/positions")
         response.raise_for_status()
-        result = response.json()
 
-        return result["result"]
+        return multiple_or_fail(response.json())
+
+
+class AsyncAccount:
+    __doc__ = Account.__doc__
+
+    def __init__(self, transport: AsyncTransport):
+        self.transport = transport
+
+    async def onboarding(self):
+        wallet = self.transport.signer.wallet
+        headers = self.transport.signer.headers("POST", "/onboarding", None)
+        signature = headers["RBT-PK-SIGNATURE"]
+
+        request = {
+            "is_client": True,
+            "wallet": wallet,
+            "profile_type": "trader",
+            "signature": signature,
+        }
+
+        response = await self.transport.post("/onboarding", body=request, headers=headers)
+        response.raise_for_status()
+        result = single_or_fail(response.json())
+        
+        data = result.result()
+        jwt_token = data["jwt"]
+        refresh_token = data["refreshToken"]
+        random_secret = data["randomSecret"]
+
+        self.transport.signer = JWTTokenSigner(jwt_token, refresh_token, random_secret)
+
+        return result
+    
+    onboarding.__doc__ = Account.onboarding.__doc__
+
+    async def renew_jwt_token(self):
+        is_client = isinstance(self.transport.signer, JWTTokenSigner) or isinstance(
+            self.transport.signer, EIP712Signer
+        )
+
+        body = {"is_client": is_client}
+
+        if is_client:
+            body["refresh_token"] = self.transport.signer.refresh_token
+
+        response = await self.transport.post("/jwt", body=body)
+        response.raise_for_status()
+        result = single_or_fail(response.json())
+        data = result.result()
+
+        if is_client:
+            self.transport.signer = JWTTokenSigner(
+                data["jwt"], data["refresh_token"], data["random_secret"]
+            )
+
+        return result
+    
+    renew_jwt_token.__doc__ = Account.renew_jwt_token.__doc__
+
+    async def positions(self):
+        response = await self.transport.get("/positions")
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+    
+    positions.__doc__ = Account.positions.__doc__
