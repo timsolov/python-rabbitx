@@ -5,6 +5,8 @@ import os
 import urllib3
 from decimal import Decimal
 import logging
+import httpx
+from abc import ABC, abstractmethod
 
 urllib3.disable_warnings()
 
@@ -38,11 +40,11 @@ class CustomEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-class Transport:
+class Transport(ABC):
     """
-    Transport class.
+    Abstract base class for RabbitX transport.
 
-    This class is a wrapper around the RabbitX transport.
+    This class defines the interface for both synchronous and asynchronous transports.
 
     Attributes
     ----------
@@ -53,12 +55,46 @@ class Transport:
     headers : dict
         The headers to send with the request
     """
-
-    def __init__(self, base_url: str, signer: Signer, headers={}):
+    def __init__(self, base_url: str, signer: Signer, headers: dict = {}):
         self.base_url = base_url
         self.signer = signer
-        self.client = requests.Session()
         self.headers = headers
+
+    @abstractmethod
+    def get(self, endpoint: str, params: dict = {}):
+        pass
+
+    @abstractmethod
+    def post(self, endpoint: str, body: dict = {}, headers: dict = {}):
+        pass
+
+    @abstractmethod
+    def put(self, endpoint: str, body: dict = {}):
+        pass
+
+    @abstractmethod
+    def delete(self, endpoint: str, body: dict = {}):
+        pass
+
+
+class SyncTransport(Transport):
+    """
+    Synchronous transport class for RabbitX API using httpx.Client.
+
+    Attributes
+    ----------
+    base_url : str
+        The base URL of the RabbitX API
+    signer : Signer
+        The signer object
+    headers : dict
+        The headers to send with the request
+    client : httpx.Client
+        The underlying HTTP client
+    """
+    def __init__(self, base_url: str, signer: Signer, headers: dict = {}):
+        super().__init__(base_url, signer, headers)
+        self.client = httpx.Client(verify=False)
 
     def _request(
         self,
@@ -72,13 +108,72 @@ class Transport:
         self.client.headers.update(self.headers)
         self.client.headers.update(headers)
 
-        body = json.dumps(body, indent=2, cls=CustomEncoder)
+        body_json = json.dumps(body, indent=2, cls=CustomEncoder)
 
         response = self.client.request(
             method,
-            data=body,
             url=f"{self.base_url}{endpoint}",
             params=params,
+            content=body_json,
+            # verify=False,
+        )
+
+        if DEBUG:
+            logger.debug(f"Response: {response.text}")
+
+        return response
+
+    def get(self, endpoint: str, params: dict = {}):
+        return self._request("GET", endpoint=endpoint, params=params)
+
+    def post(self, endpoint: str, body: dict = {}, headers: dict = {}):
+        return self._request("POST", endpoint=endpoint, body=body, headers=headers)
+
+    def put(self, endpoint: str, body: dict = {}):
+        return self._request("PUT", endpoint=endpoint, body=body)
+
+    def delete(self, endpoint: str, body: dict = {}):
+        return self._request("DELETE", endpoint=endpoint, body=body)
+
+
+class AsyncTransport(Transport):
+    """
+    Asynchronous transport class for RabbitX API using httpx.AsyncClient.
+
+    Attributes
+    ----------
+    base_url : str
+        The base URL of the RabbitX API
+    signer : Signer
+        The signer object
+    headers : dict
+        The headers to send with the request
+    client : httpx.AsyncClient
+        The underlying async HTTP client
+    """
+    def __init__(self, base_url: str, signer: Signer, headers: dict = {}):
+        super().__init__(base_url, signer, headers)
+        self.client = httpx.AsyncClient()
+
+    async def _request(
+        self,
+        method: str,
+        endpoint: str,
+        params: dict = {},
+        body: dict = {},
+        headers: dict = {},
+    ):
+        self.client.headers = self.signer.headers(method, endpoint, body)
+        self.client.headers.update(self.headers)
+        self.client.headers.update(headers)
+
+        body_json = json.dumps(body, indent=2, cls=CustomEncoder)
+
+        response = await self.client.request(
+            method,
+            url=f"{self.base_url}{endpoint}",
+            params=params,
+            content=body_json,
             verify=False,
         )
 
@@ -87,14 +182,14 @@ class Transport:
 
         return response
 
-    def get(self, endpoint: str, params={}):
-        return self._request("GET", endpoint=endpoint, params=params)
+    async def get(self, endpoint: str, params: dict = {}):
+        return await self._request("GET", endpoint=endpoint, params=params)
 
-    def post(self, endpoint: str, body={}, headers={}):
-        return self._request("POST", endpoint=endpoint, body=body)
+    async def post(self, endpoint: str, body: dict = {}, headers: dict = {}):
+        return await self._request("POST", endpoint=endpoint, body=body, headers=headers)
 
-    def put(self, endpoint: str, body={}):
-        return self._request("PUT", endpoint=endpoint, body=body)
+    async def put(self, endpoint: str, body: dict = {}):
+        return await self._request("PUT", endpoint=endpoint, body=body)
 
-    def delete(self, endpoint: str, body={}):
-        return self._request("DELETE", endpoint=endpoint, body=body)
+    async def delete(self, endpoint: str, body: dict = {}):
+        return await self._request("DELETE", endpoint=endpoint, body=body)

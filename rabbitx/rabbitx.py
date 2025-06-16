@@ -2,7 +2,7 @@ from .consts import API_URL, CHAIN_ID, EIP712_DOMAIN, EIP712_MESSAGE, EID
 from .apikey import ApiKey
 from .wallet import Wallet
 from .signer import ApiSigner, EIP712Signer
-from .transport import Transport
+from .transport import SyncTransport
 from .orders import Orders
 from .markets import Markets
 from .account import Account
@@ -65,7 +65,7 @@ class RabbitX:
         if not base_url:
             base_url = API_URL[network]
 
-        self.transport = Transport(
+        self.transport = SyncTransport(
             base_url=base_url, signer=self.signer, headers={"EID": EID[network]}
         )
 
