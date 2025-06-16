@@ -1,5 +1,6 @@
 from typing import Literal, List
-from .transport import Transport
+from .transport import Transport, SyncTransport, AsyncTransport
+from .response import SingleResponse, MultipleResponse, single_or_fail, multiple_or_fail
 
 
 class Vaults:
@@ -21,6 +22,7 @@ class Vaults:
         """Get list of vaults
 
         :return: List of vaults
+        :rtype: MultipleResponse
 
         Response:
 
@@ -45,8 +47,7 @@ class Vaults:
         """
         response = self.transport.get("/vaults")
         response.raise_for_status()
-        result = response.json()
-        return result["result"]
+        return multiple_or_fail(response.json())
 
     def holdings(self, vault_profile_id: int = None):
         """Get holdings in vaults for current profile
@@ -54,6 +55,7 @@ class Vaults:
         :param vault_profile_id: Vault profile ID (optional)
         :type vault_profile_id: int
         :return: Holdings in vaults for current profile
+        :rtype: MultipleResponse
 
         Response:
 
@@ -81,8 +83,7 @@ class Vaults:
             params={"vault_profile_id": vault_profile_id} if vault_profile_id else None,
         )
         response.raise_for_status()
-        result = response.json()
-        return result["result"]
+        return multiple_or_fail(response.json())
 
     def all_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
         """Get all balance operations
@@ -90,6 +91,7 @@ class Vaults:
         :param ops_types: List of operation types to filter by (required) ['stake', 'unstake']
         :param vault_profile_id: Vault profile ID (optional)
         :return: All balance operations
+        :rtype: MultipleResponse
 
         Response:
 
@@ -124,7 +126,7 @@ class Vaults:
             else None,
         )
         response.raise_for_status()
-        return response.json()
+        return multiple_or_fail(response.json())
 
     def user_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
         """Get user balance operations
@@ -132,6 +134,7 @@ class Vaults:
         :param ops_types: List of operation types to filter by (required) ['stake', 'unstake']
         :param vault_profile_id: Vault profile ID (optional)
         :return: User balance operations
+        :rtype: MultipleResponse
 
         Response:
 
@@ -166,8 +169,7 @@ class Vaults:
             else None,
         )
         response.raise_for_status()
-        result = response.json()
-        return result["result"]
+        return multiple_or_fail(response.json())
 
     def history(
         self,
@@ -181,6 +183,7 @@ class Vaults:
         :param type: Type of history to get (optional), default is 'nav' ['share_price', 'nav']
         :param range: Range of history to get (optional), default is '1d' ['1h', '1d', '1w', '1m', '1y', 'all']
         :return: History of a vault in timeseries format
+        :rtype: MultipleResponse
 
         Response:
 
@@ -202,8 +205,7 @@ class Vaults:
             params={"vault_profile_id": vault_profile_id, "type": type, "range": range},
         )
         response.raise_for_status()
-        result = response.json()
-        return result["result"]
+        return multiple_or_fail(response.json())
 
     def fills(
         self, vault_profile_id: int, start_time: int = None, end_time: int = None
@@ -214,6 +216,7 @@ class Vaults:
         :param start_time: Start time (optional)
         :param end_time: End time (optional)
         :return: Fills for a vault
+        :rtype: MultipleResponse
 
         Response:
 
@@ -246,8 +249,7 @@ class Vaults:
             },
         )
         response.raise_for_status()
-        result = response.json()
-        return result["result"]
+        return multiple_or_fail(response.json())
 
     def funding(
         self, vault_profile_id: int, start_time: int = None, end_time: int = None
@@ -258,6 +260,7 @@ class Vaults:
         :param start_time: Start time (optional)
         :param end_time: End time (optional)
         :return: Funding for a vault
+        :rtype: MultipleResponse
 
         Response:
 
@@ -289,5 +292,98 @@ class Vaults:
             },
         )
         response.raise_for_status()
-        result = response.json()
-        return result["result"]
+        return multiple_or_fail(response.json())
+
+class AsyncVaults:
+    __doc__ = Vaults.__doc__
+
+    def __init__(self, transport: AsyncTransport):
+        self.transport = transport
+
+    async def list(self):
+        response = await self.transport.get("/vaults")
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+    
+    list.__doc__ = Vaults.list.__doc__
+
+    async def holdings(self, vault_profile_id: int = None):
+        response = await self.transport.get(
+            "/vaults/holdings",
+            params={"vault_profile_id": vault_profile_id} if vault_profile_id else None,
+        )
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+
+    holdings.__doc__ = Vaults.holdings.__doc__
+
+    async def all_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
+        response = await self.transport.get(
+            "/vaults/all-balanceops",
+            params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
+            if ops_types or vault_profile_id
+            else None,
+        )
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+    
+    all_balanceops.__doc__ = Vaults.all_balanceops.__doc__
+
+    async def user_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
+        response = await self.transport.get(
+            "/vaults/balanceops",
+            params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
+            if ops_types or vault_profile_id
+            else None,
+        )
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+    
+    user_balanceops.__doc__ = Vaults.user_balanceops.__doc__
+
+    async def history(
+        self,
+        vault_profile_id: int,
+        type: Literal["share_price", "nav"] = "nav",
+        range: Literal["1h", "1d", "1w", "1m", "1y", "all"] = "1d",
+    ):
+        response = await self.transport.get(
+            "/vaults/history",
+            params={"vault_profile_id": vault_profile_id, "type": type, "range": range},
+        )
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+    
+    history.__doc__ = Vaults.history.__doc__
+
+    async def fills(
+        self, vault_profile_id: int, start_time: int = None, end_time: int = None
+    ):
+        response = await self.transport.get(
+            "/vaults/fills",
+            params={
+                "vault_profile_id": vault_profile_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            },
+        )
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+    
+    fills.__doc__ = Vaults.fills.__doc__
+
+    async def funding(
+        self, vault_profile_id: int, start_time: int = None, end_time: int = None
+    ):
+        response = await self.transport.get(
+            "/vaults/funding",
+            params={
+                "vault_profile_id": vault_profile_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            },
+        )
+        response.raise_for_status()
+        return multiple_or_fail(response.json())
+    
+    funding.__doc__ = Vaults.funding.__doc__
