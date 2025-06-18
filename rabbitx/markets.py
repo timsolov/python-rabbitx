@@ -1,5 +1,5 @@
-from .transport import Transport, SyncTransport, AsyncTransport
-from .response import SingleResponse, MultipleResponse, single_or_fail, multiple_or_fail
+from .transport import Transport, AsyncTransport
+from .response import single_or_fail, multiple_or_fail
 
 
 class Markets:
@@ -134,12 +134,12 @@ class AsyncMarkets:
         response = await self.transport.get("/markets", params={"market_id": market_id})
         response.raise_for_status()
         return single_or_fail(response.json())
-    
+
     info.__doc__ = Markets.info.__doc__
 
     async def list(self):
         response = await self.transport.get("/markets")
         response.raise_for_status()
         return multiple_or_fail(response.json())
-    
+
     list.__doc__ = Markets.list.__doc__

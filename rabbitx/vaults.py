@@ -1,6 +1,6 @@
 from typing import Literal, List
-from .transport import Transport, SyncTransport, AsyncTransport
-from .response import SingleResponse, MultipleResponse, single_or_fail, multiple_or_fail
+from .transport import Transport, AsyncTransport
+from .response import multiple_or_fail
 
 
 class Vaults:
@@ -294,6 +294,7 @@ class Vaults:
         response.raise_for_status()
         return multiple_or_fail(response.json())
 
+
 class AsyncVaults:
     __doc__ = Vaults.__doc__
 
@@ -304,7 +305,7 @@ class AsyncVaults:
         response = await self.transport.get("/vaults")
         response.raise_for_status()
         return multiple_or_fail(response.json())
-    
+
     list.__doc__ = Vaults.list.__doc__
 
     async def holdings(self, vault_profile_id: int = None):
@@ -326,7 +327,7 @@ class AsyncVaults:
         )
         response.raise_for_status()
         return multiple_or_fail(response.json())
-    
+
     all_balanceops.__doc__ = Vaults.all_balanceops.__doc__
 
     async def user_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
@@ -338,7 +339,7 @@ class AsyncVaults:
         )
         response.raise_for_status()
         return multiple_or_fail(response.json())
-    
+
     user_balanceops.__doc__ = Vaults.user_balanceops.__doc__
 
     async def history(
@@ -353,7 +354,7 @@ class AsyncVaults:
         )
         response.raise_for_status()
         return multiple_or_fail(response.json())
-    
+
     history.__doc__ = Vaults.history.__doc__
 
     async def fills(
@@ -369,7 +370,7 @@ class AsyncVaults:
         )
         response.raise_for_status()
         return multiple_or_fail(response.json())
-    
+
     fills.__doc__ = Vaults.fills.__doc__
 
     async def funding(
@@ -385,5 +386,5 @@ class AsyncVaults:
         )
         response.raise_for_status()
         return multiple_or_fail(response.json())
-    
+
     funding.__doc__ = Vaults.funding.__doc__

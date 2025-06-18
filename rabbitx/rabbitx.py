@@ -101,7 +101,13 @@ class RabbitX:
 class AsyncRabbitX(RabbitX):
     __doc__ = RabbitX.__doc__
 
-    def __init__(self, network: str, wallet: Wallet | None = None, api_key: ApiKey | None = None, base_url: str | None = None):
+    def __init__(
+        self,
+        network: str,
+        wallet: Wallet | None = None,
+        api_key: ApiKey | None = None,
+        base_url: str | None = None,
+    ):
         super().__init__(network, wallet, api_key, base_url)
 
         self.transport = AsyncTransport(

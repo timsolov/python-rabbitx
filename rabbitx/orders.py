@@ -1,9 +1,13 @@
 from typing import TypedDict, Literal, Optional, List
-from .transport import Transport, SyncTransport, AsyncTransport
+from .transport import Transport
 from decimal import Decimal
 from .response import single_or_fail, multiple_or_fail
 
-OrderSide = Literal["long", "short"]
+OrderSide = Literal[
+    "long",
+    "short",
+]
+
 OrderStatus = Literal[
     "processing",
     "open",
@@ -15,6 +19,7 @@ OrderStatus = Literal[
     "cancelingall",
     "placed",
 ]
+
 OrderType = Literal[
     "limit",
     "market",
@@ -27,8 +32,12 @@ OrderType = Literal[
     "cancel",
     "amend",
 ]
+
 TypeInForce = Literal[
-    "good_till_cancel", "immediate_or_cancel", "fill_or_kill", "post_only"
+    "good_till_cancel",
+    "immediate_or_cancel",
+    "fill_or_kill",
+    "post_only",
 ]
 
 
@@ -54,6 +63,7 @@ class ListOrdersParams(TypedDict):
 
 class AmendOrderParams(TypedDict):
     order_id: str
+    client_order_id: Optional[str] = None
     market_id: str
     price: Optional[Decimal | float] = None
     size: Optional[Decimal | float] = None
@@ -67,7 +77,42 @@ class CancelOrderParams(TypedDict):
     market_id: str
 
 
-class Orders:
+class BaseOrders:
+    def __init__(self, transport: Transport):
+        self.transport = transport
+
+    def _fix_create_params(self, params: CreateOrderParams):
+        if isinstance(params["price"], Decimal) or isinstance(params["price"], str):
+            params["price"] = float(params["price"])
+
+        if isinstance(params["size"], Decimal) or isinstance(params["size"], str):
+            params["size"] = float(params["size"])
+
+        if "trigger_price" in params and (
+            isinstance(params["trigger_price"], Decimal)
+            or isinstance(params["trigger_price"], str)
+        ):
+            params["trigger_price"] = float(params["trigger_price"])
+
+    def _fix_amend_params(self, params: AmendOrderParams):
+        if "price" in params and (
+            isinstance(params["price"], Decimal) or isinstance(params["price"], str)
+        ):
+            params["price"] = float(params["price"])
+
+        if "size" in params and (
+            isinstance(params["size"], Decimal) or isinstance(params["size"], str)
+        ):
+            params["size"] = float(params["size"])
+
+        if "trigger_price" in params and (
+            isinstance(params["trigger_price"], Decimal)
+            or isinstance(params["trigger_price"], str)
+        ):
+            params["trigger_price"] = float(params["trigger_price"])
+
+
+class Orders(BaseOrders):
     """
     Orders class.
 
@@ -78,9 +123,6 @@ class Orders:
     transport : Transport
         The transport object
     """
-
-    def __init__(self, transport: Transport):
-        self.transport = transport
 
     def create(self, **params: CreateOrderParams):
         """
@@ -125,19 +167,7 @@ class Orders:
                 "time_in_force": "good_till_cancel"
             }
         """
-
-        if isinstance(params["price"], Decimal) or isinstance(params["price"], str):
-            params["price"] = float(params["price"])
-
-        if isinstance(params["size"], Decimal) or isinstance(params["size"], str):
-            params["size"] = float(params["size"])
-
-        if "trigger_price" in params and (
-            isinstance(params["trigger_price"], Decimal)
-            or isinstance(params["trigger_price"], str)
-        ):
-            params["trigger_price"] = float(params["trigger_price"])
-
+        self._fix_create_params(params)
         response = self.transport.post("/orders", body=params)
         response.raise_for_status()
         return single_or_fail(response.json())
@@ -228,22 +258,7 @@ class Orders:
             }
         """
 
-        if "price" in params and (
-            isinstance(params["price"], Decimal) or isinstance(params["price"], str)
-        ):
-            params["price"] = float(params["price"])
-
-        if "size" in params and (
-            isinstance(params["size"], Decimal) or isinstance(params["size"], str)
-        ):
-            params["size"] = float(params["size"])
-
-        if "trigger_price" in params and (
-            isinstance(params["trigger_price"], Decimal)
-            or isinstance(params["trigger_price"], str)
-        ):
-            params["trigger_price"] = float(params["trigger_price"])
-
+        self._fix_amend_params(params)
         response = self.transport.put("/orders", body=params)
         response.raise_for_status()
         return single_or_fail(response.json())
@@ -298,25 +313,11 @@ class Orders:
         return single_or_fail(response.json())
 
 
-class AsyncOrders:
+class AsyncOrders(BaseOrders):
     __doc__ = Orders.__doc__
 
-    def __init__(self, transport: AsyncTransport):
-        self.transport = transport
-
     async def create(self, **params: CreateOrderParams):
-        if isinstance(params["price"], Decimal) or isinstance(params["price"], str):
-            params["price"] = float(params["price"])
-
-        if isinstance(params["size"], Decimal) or isinstance(params["size"], str):
-            params["size"] = float(params["size"])
-
-        if "trigger_price" in params and (
-            isinstance(params["trigger_price"], Decimal)
-            or isinstance(params["trigger_price"], str)
-        ):
-            params["trigger_price"] = float(params["trigger_price"])
-
+        self._fix_create_params(params)
         response = await self.transport.post("/orders", body=params)
         response.raise_for_status()
         return single_or_fail(response.json())
@@ -324,29 +325,16 @@ class AsyncOrders:
     create.__doc__ = Orders.create.__doc__
 
     async def list(self, **params: ListOrdersParams):
-        response = await self.transport.get("/orders", params=params if params else None)
+        response = await self.transport.get(
+            "/orders", params=params if params else None
+        )
         response.raise_for_status()
         return multiple_or_fail(response.json())
 
     list.__doc__ = Orders.list.__doc__
 
     async def amend(self, **params: AmendOrderParams):
-        if "price" in params and (
-            isinstance(params["price"], Decimal) or isinstance(params["price"], str)
-        ):
-            params["price"] = float(params["price"])
-
-        if "size" in params and (
-            isinstance(params["size"], Decimal) or isinstance(params["size"], str)
-        ):
-            params["size"] = float(params["size"])
-
-        if "trigger_price" in params and (
-            isinstance(params["trigger_price"], Decimal)
-            or isinstance(params["trigger_price"], str)
-        ):
-            params["trigger_price"] = float(params["trigger_price"])
-
+        self._fix_amend_params(params)
         response = await self.transport.put("/orders", body=params)
         response.raise_for_status()
         return single_or_fail(response.json())

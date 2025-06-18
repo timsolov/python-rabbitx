@@ -1,5 +1,4 @@
 from rabbitx.signer import Signer
-import requests
 import json
 import os
 import urllib3
@@ -55,6 +54,7 @@ class Transport(ABC):
     headers : dict
         The headers to send with the request
     """
+
     def __init__(self, base_url: str, signer: Signer, headers: dict = {}):
         self.base_url = base_url
         self.signer = signer
@@ -92,6 +92,7 @@ class SyncTransport(Transport):
     client : httpx.Client
         The underlying HTTP client
     """
+
     def __init__(self, base_url: str, signer: Signer, headers: dict = {}):
         super().__init__(base_url, signer, headers)
         self.client = httpx.Client(verify=False)
@@ -151,6 +152,7 @@ class AsyncTransport(Transport):
     client : httpx.AsyncClient
         The underlying async HTTP client
     """
+
     def __init__(self, base_url: str, signer: Signer, headers: dict = {}):
         super().__init__(base_url, signer, headers)
         self.client = httpx.AsyncClient()
@@ -186,7 +188,9 @@ class AsyncTransport(Transport):
         return await self._request("GET", endpoint=endpoint, params=params)
 
     async def post(self, endpoint: str, body: dict = {}, headers: dict = {}):
-        return await self._request("POST", endpoint=endpoint, body=body, headers=headers)
+        return await self._request(
+            "POST", endpoint=endpoint, body=body, headers=headers
+        )
 
     async def put(self, endpoint: str, body: dict = {}):
         return await self._request("PUT", endpoint=endpoint, body=body)
