@@ -63,7 +63,9 @@ class RabbitX:
             self.signer = ApiSigner(api_key=api_key)
 
         self.transport = SyncTransport(
-            base_url=base_url or API_URL[network], signer=self.signer, headers={"EID": EID[network]}
+            base_url=base_url or API_URL[network],
+            signer=self.signer,
+            headers={"EID": EID[network]},
         )
 
         self.account = Account(self.transport)
@@ -108,7 +110,9 @@ class AsyncRabbitX(RabbitX):
         super().__init__(network, wallet, api_key, base_url)
 
         self.transport = AsyncTransport(
-            base_url=base_url or API_URL[network], signer=self.signer, headers={"EID": EID[network]}
+            base_url=base_url or API_URL[network],
+            signer=self.signer,
+            headers={"EID": EID[network]},
         )
 
         self.account = AsyncAccount(self.transport)

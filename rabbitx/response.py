@@ -81,7 +81,7 @@ def multiple_or_fail(response) -> MultipleResponse:
 
     if not response.success:
         raise UnsuccessfulResponse(response)
-    
+
     if response.result is None:
         raise BadResult(response)
 
