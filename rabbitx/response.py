@@ -15,7 +15,7 @@ class BadResult(Exception):
 
 class APIResponse(BaseModel):
     success: bool
-    result: list[dict | bool]
+    result: Optional[list[dict | bool]] = None
     request_id: Optional[str] = None
     pagination: Optional[dict] = None
 
@@ -81,8 +81,8 @@ def multiple_or_fail(response) -> MultipleResponse:
 
     if not response.success:
         raise UnsuccessfulResponse(response)
-
-    if not response.result:
+    
+    if response.result is None:
         raise BadResult(response)
 
     return MultipleResponse(response)
