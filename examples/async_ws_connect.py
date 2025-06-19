@@ -33,9 +33,9 @@ async def main():
             on_subscribe=on_subscribe,
         )
 
-        await ws.create_task()
+        await ws.start()
         await asyncio.sleep(10)  # Keep connection alive for 10 seconds
-        await ws.cancel_task()
+        await ws.stop()
 
 
 if __name__ == "__main__":

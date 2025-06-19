@@ -108,7 +108,6 @@ class AsyncWS:
             channel = "orderbook:BTC-USD"
             ws = AsyncWS(...)
             ws.register_handler(channel, OrderbookHandler(channel))
-            await ws.subscribe(channel)
 
             await ws.start()
 
@@ -218,7 +217,7 @@ class AsyncWS:
                     on_message=on_message,
                 )
 
-                await ws.create_task()
+                await ws.start()
 
         2. Register a handler for a channel using the register_handler method.
 
@@ -241,9 +240,8 @@ class AsyncWS:
                 channel = "orderbook:BTC-USD"
                 ws = AsyncWS(...)
                 ws.register_handler(channel, OrderbookHandler(channel))
-                await ws.subscribe(channel)
 
-                await ws.create_task()
+                await ws.start()
 
         :param channel: The channel to subscribe to
         :type channel: str
@@ -358,12 +356,12 @@ class AsyncWS:
         finally:
             await self._disconnect()
 
-    async def create_task(self):
+    async def start(self):
         """Create a task for the WebSocket connection"""
         self._websocket_task = asyncio.create_task(self._run())
         return self._websocket_task
 
-    async def cancel_task(self):
+    async def stop(self):
         """Cancel the WebSocket connection task"""
         self._stop_event.set()
         if self.conn:

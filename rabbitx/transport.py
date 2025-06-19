@@ -62,18 +62,80 @@ class Transport(ABC):
 
     @abstractmethod
     def get(self, endpoint: str, params: dict = {}):
+        """
+        Send a GET request to the specified endpoint.
+
+        Parameters
+        ----------
+        endpoint : str
+            The API endpoint to send the request to
+        params : dict, optional
+            Query parameters to include in the request, by default {}
+
+        Returns
+        -------
+        Response
+            The response from the API
+        """
         pass
 
     @abstractmethod
     def post(self, endpoint: str, body: dict = {}, headers: dict = {}):
+        """
+        Send a POST request to the specified endpoint.
+
+        Parameters
+        ----------
+        endpoint : str
+            The API endpoint to send the request to
+        body : dict, optional
+            The request body, by default {}
+        headers : dict, optional
+            Additional headers to include in the request, by default {}
+
+        Returns
+        -------
+        Response
+            The response from the API
+        """
         pass
 
     @abstractmethod
     def put(self, endpoint: str, body: dict = {}):
+        """
+        Send a PUT request to the specified endpoint.
+
+        Parameters
+        ----------
+        endpoint : str
+            The API endpoint to send the request to
+        body : dict, optional
+            The request body, by default {}
+
+        Returns
+        -------
+        Response
+            The response from the API
+        """
         pass
 
     @abstractmethod
     def delete(self, endpoint: str, body: dict = {}):
+        """
+        Send a DELETE request to the specified endpoint.
+
+        Parameters
+        ----------
+        endpoint : str
+            The API endpoint to send the request to
+        body : dict, optional
+            The request body, by default {}
+
+        Returns
+        -------
+        Response
+            The response from the API
+        """
         pass
 
 

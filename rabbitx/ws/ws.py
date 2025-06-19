@@ -22,6 +22,22 @@ class WS:
     WS class.
 
     This class is a wrapper around the RabbitX WebSocket API.
+
+    Attributes
+    ----------
+    token: str
+        The token for the WebSocket connection
+    network: str
+        The network to connect to (e.g. consts.ETHEREUM_MAINNET)
+    url: str
+        The URL of the WebSocket server (e.g. consts.WS_URL[network] or custom URL) or None if network is provided
+    channels: list[str]
+        The channels to subscribe to immediately after authorization (it runs subscribe method for each channel).
+    on_message: Callable[[str, dict], None]
+        The callback function for incoming messages it should accept two arguments: channel and data (eg. on_message(channel, data)).
+    on_subscribe: Callable[[str, dict], None]
+        The callback function for incoming subscribe messages it should accept two arguments: channel and data (eg. on_subscribe(channel, data)).
+
     """
 
     def __init__(
@@ -236,7 +252,6 @@ class WS:
                 channel = "orderbook:BTC-USD"
                 ws = WS(...)
                 ws.register_handler(channel, OrderbookHandler(channel))
-                ws.subscribe(channel)
 
                 ws.start()
 
