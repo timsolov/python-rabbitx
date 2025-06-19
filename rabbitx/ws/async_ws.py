@@ -28,7 +28,7 @@ class AsyncWS:
         token: str,
         network: str = None,
         url: str = None,
-        channels: list[str] = {},
+        channels: list[str] = [],
         on_message: Callable[[str, dict], asyncio.Future] = None,
         on_subscribe: Callable[[str, dict], asyncio.Future] = None,
         ssl_skip_verify: bool = False,
@@ -70,6 +70,7 @@ class AsyncWS:
         self.channels = channels
         self.subscribed = {}
         self.authorized = False
+        self.connected = False
         self.handlers = {}
         self.connection_params = kwargs
         if ssl_skip_verify:
@@ -120,6 +121,10 @@ class AsyncWS:
             self.handlers[channel] = []
         self.handlers[channel].append(handler)
 
+        if not self.connected:
+            if channel not in self.channels:
+                self.channels.append(channel)
+
     async def _connect(self):
         """
         Connect to the WebSocket server.
@@ -128,6 +133,7 @@ class AsyncWS:
             self.conn = await connect(self.url, **self.connection_params)
             if DEBUG:
                 logger.debug("Connected to %s", self.url)
+            self.connected = True
             if self.token:
                 await self._authorize()
         except Exception as e:
@@ -143,6 +149,7 @@ class AsyncWS:
             self.conn = None
 
         self.authorized = False
+        self.connected = False
 
     async def send(self, message: str):
         """
@@ -247,6 +254,10 @@ class AsyncWS:
         :type channel: str
         """
 
+        if not self.connected and channel not in self.channels:
+            self.channels.append(channel)
+            return
+        
         async def on_subscribe(msg):
             if DEBUG:
                 logger.debug("Subscribed to %s", channel)

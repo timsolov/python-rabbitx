@@ -173,6 +173,76 @@ class Account(BaseAccount):
 
         return result
 
+    def info(self):
+        """
+        Get the profile information
+
+        :return: The account information
+        :rtype: SingleResponse
+
+        Response:
+
+        .. code-block:: python
+
+            {
+                "id": 84980,
+                "profile_type": "trader",
+                "status": "active",
+                "wallet": "0x2b0f80b047c63052288e56b9e6ad9d2a4196441f",
+                "last_update": 1750368986624541,
+                "balance": "14661.794000",
+                "account_equity": "14661.503800",
+                "total_position_margin": "2.0625",
+                "total_order_margin": "0",
+                "total_notional": "41.25",
+                "account_margin": "355.43039",
+                "withdrawable_balance": "14659.441300",
+                "cum_unrealized_pnl": "-0.2902",
+                "health": "1",
+                "account_leverage": "0.0028134903867901",
+                "cum_trading_volume": "518.8547",
+                "leverage": {
+                    "BTC-USD": "20",
+                    "ETH-USD": "20",
+                    "SOL-USD": "20"
+                },
+                "last_liq_check": 0,
+                "mmf_total": "1.03125",
+                "acmf_total": "0.515625",
+                "positions": [
+                    {
+                        "id": "pos-BTC-USD-tr-84980",
+                        "market_id": "BTC-USD",
+                        "profile_id": 84980,
+                        "size": "0.0004",
+                        "side": "long",
+                        "entry_price": "103850.5",
+                        "unrealized_pnl": "-0.2902",
+                        "notional": "41.25",
+                        "margin": "2.0625",
+                        "liquidation_price": "0",
+                        "fair_price": "103125"
+                    }
+                ],
+                "tier_status": {
+                    "current": {
+                        "tier": 0,
+                        "title": "VIP 0 (Shrimp)",
+                        "min_volume": "0"
+                    },
+                    "next": {
+                        "tier": 1,
+                        "title": "VIP 1 (Herring)",
+                        "min_volume": "1000000"
+                    },
+                    "needed_volume": "999481.1453"
+                }
+            }
+        """
+        response = self.transport.get("/account")
+        response.raise_for_status()
+        return single_or_fail(response.json())
+
     def positions(self):
         """
         Get all positions
@@ -240,6 +310,13 @@ class AsyncAccount(BaseAccount):
         return result
 
     renew_jwt_token.__doc__ = Account.renew_jwt_token.__doc__
+
+    async def info(self):
+        response = await self.transport.get("/account")
+        response.raise_for_status()
+        return single_or_fail(response.json())
+    
+    info.__doc__ = Account.info.__doc__
 
     async def positions(self):
         response = await self.transport.get("/positions")

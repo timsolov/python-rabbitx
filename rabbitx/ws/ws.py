@@ -45,7 +45,7 @@ class WS:
         token: str,
         network: str = None,
         url: str = None,
-        channels: list[str] = {},
+        channels: list[str] = [],
         on_message: Callable[[str, dict], None] = None,
         on_subscribe: Callable[[str, dict], None] = None,
         ssl_skip_verify: bool = False,
@@ -87,6 +87,7 @@ class WS:
         self.channels = channels
         self.subscribed = {}
         self.authorized = False
+        self.connected = False
         self.handlers = {}
         self.connection_params = kwargs
         if ssl_skip_verify:
@@ -137,6 +138,10 @@ class WS:
         if channel not in self.handlers:
             self.handlers[channel] = []
         self.handlers[channel].append(handler)
+        
+        if not self.connected and channel not in self.channels:
+            self.channels.append(channel)
+            return
 
     def _connect(self):
         """
@@ -146,6 +151,7 @@ class WS:
             self.conn = connect(self.url, **self.connection_params)
             if DEBUG:
                 logger.debug("Connected to %s", self.url)
+            self.connected = True
             if self.token:
                 self._authorize()
         except Exception as e:
@@ -161,6 +167,7 @@ class WS:
             self.conn = None
 
         self.authorized = False
+        self.connected = False
 
     def send(self, message: str):
         """
@@ -258,6 +265,10 @@ class WS:
         :param channel: The channel to subscribe to
         :type channel: str
         """
+
+        if not self.connected and channel not in self.channels:
+            self.channels.append(channel)
+            return
 
         def on_subscribe(msg):
             if DEBUG:

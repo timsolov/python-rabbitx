@@ -82,7 +82,7 @@ class BaseOrders:
         self.transport = transport
 
     def _fix_create_params(self, params: CreateOrderParams):
-        if isinstance(params["price"], Decimal) or isinstance(params["price"], str):
+        if "price" in params and (isinstance(params["price"], Decimal) or isinstance(params["price"], str)):
             params["price"] = float(params["price"])
 
         if isinstance(params["size"], Decimal) or isinstance(params["size"], str):
