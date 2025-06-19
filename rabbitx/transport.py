@@ -155,7 +155,20 @@ class AsyncTransport(Transport):
 
     def __init__(self, base_url: str, signer: Signer, headers: dict = {}):
         super().__init__(base_url, signer, headers)
-        self.client = httpx.AsyncClient()
+        self.client = None
+
+    async def __aenter__(self):
+        self.client = httpx.AsyncClient(verify=False)
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.client:
+            await self.client.aclose()
+            self.client = None
+
+    async def _ensure_client(self):
+        if not self.client:
+            self.client = httpx.AsyncClient(verify=False)
 
     async def _request(
         self,
@@ -165,6 +178,7 @@ class AsyncTransport(Transport):
         body: dict = {},
         headers: dict = {},
     ):
+        await self._ensure_client()
         self.client.headers = self.signer.headers(method, endpoint, body)
         self.client.headers.update(self.headers)
         self.client.headers.update(headers)
@@ -176,7 +190,6 @@ class AsyncTransport(Transport):
             url=f"{self.base_url}{endpoint}",
             params=params,
             content=body_json,
-            verify=False,
         )
 
         if DEBUG:

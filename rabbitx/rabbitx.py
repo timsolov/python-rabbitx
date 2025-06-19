@@ -62,11 +62,8 @@ class RabbitX:
         else:
             self.signer = ApiSigner(api_key=api_key)
 
-        if not base_url:
-            base_url = API_URL[network]
-
         self.transport = SyncTransport(
-            base_url=base_url, signer=self.signer, headers={"EID": EID[network]}
+            base_url=base_url or API_URL[network], signer=self.signer, headers={"EID": EID[network]}
         )
 
         self.account = Account(self.transport)
@@ -111,10 +108,17 @@ class AsyncRabbitX(RabbitX):
         super().__init__(network, wallet, api_key, base_url)
 
         self.transport = AsyncTransport(
-            base_url=base_url, signer=self.signer, headers={"EID": EID[network]}
+            base_url=base_url or API_URL[network], signer=self.signer, headers={"EID": EID[network]}
         )
 
         self.account = AsyncAccount(self.transport)
         self.orders = AsyncOrders(self.transport)
         self.markets = AsyncMarkets(self.transport)
         self.vaults = AsyncVaults(self.transport)
+
+    async def __aenter__(self):
+        await self.transport.__aenter__()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.transport.__aexit__(exc_type, exc_val, exc_tb)
