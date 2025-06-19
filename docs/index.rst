@@ -36,7 +36,7 @@ python-rabbitx is a Python client for interacting with the RabbitX exchange. It 
       network=consts.ETHEREUM_MAINNET, api_key=ApiKey.from_file(".apikey/apiKey.json")
    )
 
-   # or if you want to use a private key:
+   # or if you want to use a private key (not recommended):
 
    # from rabbitx.wallet import Wallet
    # rabbitx = RabbitX(
@@ -47,7 +47,7 @@ python-rabbitx is a Python client for interacting with the RabbitX exchange. It 
    # Replace with real values as needed
    order = rabbitx.orders.create(
       market_id="BTC-USD", type="limit", side="long", price=10000, size=0.001
-   )
+   ).result()
 
    print(f"Order: {order}")
 

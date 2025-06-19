@@ -8,8 +8,9 @@ A modern, high-performance Python SDK for interacting with the [RabbitX](https:/
 
 - **Simple, unified API** for trading, account, and market operations
 - **WebSocket streaming** for real-time orderbook, trades, and account updates
-- **Secure authentication** with private key or API key
-- **Supports multiple networks**: Ethereum, Blast, and their testnets
+- **Secure authentication** with API key (recommended) or private key (not recommended)
+- **Supports multiple networks**: Ethereum, Blast, and other networks as well as their testnets
+- **Threaded** and **async** support for the all REST API and WebSocket API
 - **Comprehensive examples** for rapid integration
 
 ---
@@ -33,6 +34,10 @@ uv sync
 ```
 
 ### Run examples
+
+1. Create a `.apikey/apiKey.json` file with your API key. See the [Generate Your API Keys](https://docs.rabbitx.com/api-documentation/generate-your-api-keys) for more information.
+
+2. Run the example:
 
 ```bash
 uv run examples/auth_api_key.py
@@ -63,7 +68,7 @@ rabbitx = RabbitX(
 # Replace with real values as needed
 order = rabbitx.orders.create(
     market_id="BTC-USD", type="limit", side="long", price=10000, size=0.001
-)
+).result()
 
 print(f"Order: {order}")
 ```
@@ -91,7 +96,7 @@ rabbitx = RabbitX(
 - `rabbitx.vaults` – Vault management
 
 ### WebSocket API
-- `WS` – Real-time connection and channel management
+- `WS` or `AsyncWS` – Real-time connection and channel management
 - `Orderbook`, `OpenedOrders`, `Positions` – Real-time data handlers
 
 ---
