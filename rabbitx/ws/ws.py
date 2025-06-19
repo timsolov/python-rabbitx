@@ -88,6 +88,31 @@ class WS:
         """
         Register a handler for a channel.
 
+        The handler should be registered before subscribing to the channel.
+        Otherwise, you're in risk of missing messages.
+        The handler will be called with the data of the subscription.
+        The handler will be called with the data of the message.
+
+        Example:
+            .. code-block:: python
+
+                from rabbitx.ws.ws import WS
+                from rabbitx.ws.channel_handler import ChannelHandler
+
+                class OrderbookHandler(ChannelHandler):
+                    def on_subscribe(self, data):
+                        print(f"[ORDERBOOK] Subscribed: {data}")
+
+                    def on_data(self, data):
+                        print(f"[ORDERBOOK] Data: {data}")
+
+                channel = "orderbook:BTC-USD"
+                ws = WS(...)
+                ws.register_handler(channel, OrderbookHandler(channel))
+                ws.subscribe(channel)
+
+                ws.start()
+
         :param channel: The channel to register the handler for
         :type channel: str
         :param handler: The handler to register
@@ -97,7 +122,7 @@ class WS:
             self.handlers[channel] = []
         self.handlers[channel].append(handler)
 
-    def connect(self):
+    def _connect(self):
         """
         Connect to the WebSocket server.
         """
@@ -106,12 +131,12 @@ class WS:
             if DEBUG:
                 logger.debug("Connected to %s", self.url)
             if self.token:
-                self.authorize()
+                self._authorize()
         except Exception as e:
             logger.error("Error in connect(): %s", e)
             raise
 
-    def disconnect(self):
+    def _disconnect(self):
         """
         Disconnect from the WebSocket server.
         """
@@ -119,31 +144,41 @@ class WS:
             self.conn.close()
             self.conn = None
 
+        self.authorized = False
+
     def send(self, message: str):
         """
         Send a message to the WebSocket server.
 
-        :param message: The message to send
+        :param message: The raw message to send (json string)
         :type message: str
         """
         self.conn.send(message)
 
-    def send_with_handler(self, message: dict, handler: Callable[[dict], None]):
+    def request(self, message: dict, callback: Callable[[dict], None]):
         """
-        Send a message to the WebSocket server with a handler.
+        Send a message to the WebSocket server with a callback function
+        which will be called when the message is received.
+        The callback function will be called with the received message as an argument.
 
-        :param message: The message to send
+        :param message: The message to send (json object)
         :type message: dict
-        :param handler: The handler to register
+        :param callback: The callback function to call when the message is received (eg. callback(message))
+        :type callback: Callable[[dict], None]
         """
         self.message_id += 1
-        self.promises[self.message_id] = handler
+        self.promises[self.message_id] = callback
         message.update({"id": self.message_id})
         self.send(json.dumps(message))
 
-    def authorize(self):
+    def _authorize(self):
         """
         Authorize the WebSocket connection.
+        This method will send the authorize message to the WebSocket server
+        and subscribe to the channels specified in the constructor.
+
+        It's not necessary to call this method manually.
+        It's called automatically when the connection is established.
         """
 
         def on_authorized(_):
@@ -153,13 +188,57 @@ class WS:
             for channel in self.channels:
                 self.subscribe(channel)
 
-        self.send_with_handler(
-            {"connect": {"token": self.token, "name": "js"}}, on_authorized
-        )
+        self.request({"connect": {"token": self.token, "name": "js"}}, on_authorized)
 
     def subscribe(self, channel: str):
         """
         Subscribe to a channel.
+
+        There are two ways to handle messages from subscribed channels:
+        1. Define the on_subscribe and on_message callbacks in the constructor.
+
+            Example:
+
+            .. code-block:: python
+
+                from rabbitx.ws import WS
+
+                def on_message(channel, data):
+                    print(f"[MESSAGE] Channel: {channel}, Data: {data}")
+
+                def on_subscribe(channel, data):
+                    print(f"[SUBSCRIBED] Channel: {channel}, Data: {data}")
+
+                ws = WS(
+                    token=token,
+                    on_subscribe=on_subscribe,
+                    on_message=on_message,
+                )
+
+                ws.start()
+
+        2. Register a handler for a channel using the register_handler method.
+
+            Example:
+
+            .. code-block:: python
+
+                from rabbitx.ws.channel_handler import ChannelHandler
+                from rabbitx.ws import WS
+
+                class OrderbookHandler(ChannelHandler):
+                    def on_subscribe(self, data):
+                        print(f"[ORDERBOOK] Subscribed: {data}")
+
+                    def on_data(self, data):
+                        print(f"[ORDERBOOK] Data: {data}")
+
+                channel = "orderbook:BTC-USD"
+                ws = WS(...)
+                ws.register_handler(channel, OrderbookHandler(channel))
+                ws.subscribe(channel)
+
+                ws.start()
 
         :param channel: The channel to subscribe to
         :type channel: str
@@ -172,7 +251,7 @@ class WS:
             data = msg["subscribe"]["data"]
             self._handler_queue.put(("subscribe", (channel, data)))
 
-        self.send_with_handler(
+        self.request(
             {
                 "subscribe": {"channel": channel},
             },
@@ -216,13 +295,7 @@ class WS:
             except Exception as e:
                 logger.error("Error in handler worker: %s", e)
 
-    def single_message(self, message):
-        """
-        Process a single message.
-
-        :param message: The message to process
-        :type message: str
-        """
+    def _process_message(self, message):
         try:
             msg = json.loads(message)
         except Exception as e:
@@ -239,10 +312,7 @@ class WS:
         else:
             logger.error("Received unknown message: %s", msg)
 
-    def consume(self):
-        """
-        Consume messages from the WebSocket server.
-        """
+    def _run(self):
         try:
             while not self._websocket_stop_event.is_set():
                 try:
@@ -261,12 +331,12 @@ class WS:
                     for msg in message.split("\n"):
                         if msg.strip() == "":
                             continue
-                        self.single_message(msg)
+                        self._process_message(msg)
                 else:
-                    self.single_message(message)
+                    self._process_message(message)
         except ConnectionClosedOK as e:
             logger.error("Connection closed: %s", e)
-            self.disconnect()
+            self._disconnect()
         except Exception as e:
             logger.error("Error in consume(): %s", e)
             raise
@@ -279,14 +349,14 @@ class WS:
         def websocket_thread():
             try:
                 logger.debug("Attempting to connect to WebSocket...")
-                self.connect()
+                self._connect()
                 logger.debug("WebSocket connected successfully")
                 logger.debug("Starting to consume messages...")
-                self.consume()
+                self._run()
             except Exception as e:
                 logger.error("Error in WebSocket thread: %s", e)
             finally:
-                self.disconnect()
+                self._disconnect()
 
         # Start handler thread
         self._handler_thread = threading.Thread(
@@ -306,7 +376,7 @@ class WS:
         self._handler_stop_event.set()
         if self.conn:
             try:
-                self.disconnect()
+                self._disconnect()
             except Exception:
                 pass
         if self._websocket_thread:
