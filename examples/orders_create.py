@@ -14,6 +14,6 @@ rabbitx = RabbitX(
 # Replace with real values as needed
 order = rabbitx.orders.create(
     market_id="BTC-USD", type="limit", side="long", price=10000, size=0.001
-)
+).result()
 
 print(f"Order created: {order}")

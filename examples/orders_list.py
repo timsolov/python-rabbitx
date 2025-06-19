@@ -10,6 +10,6 @@ from rabbitx.apikey import ApiKey
 rabbitx = RabbitX(
     network=consts.ETHEREUM_MAINNET, api_key=ApiKey.from_file(".apikey/apiKey.json")
 )
-orders = rabbitx.orders.list()
+orders = rabbitx.orders.list().result()
 
 print(f"Orders: {orders}")

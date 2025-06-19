@@ -15,6 +15,6 @@ rabbitx = RabbitX(
 # Replace with real values as needed
 amended = rabbitx.orders.amend(
     order_id="BTC-USD@1234", market_id="BTC-USD", price=11000
-)
+).result()
 
 print(f"Order amended: {amended}")

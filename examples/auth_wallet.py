@@ -9,8 +9,10 @@ from rabbitx.wallet import Wallet
 
 
 rabbitx = RabbitX(
-    network=consts.ETHEREUM_MAINNET, wallet=Wallet.from_file(".wallets/wallet.pk")
+    network=consts.ETHEREUM_MAINNET, 
+    wallet=Wallet.from_file(".wallets/wallet.pk"),
 )
-token = rabbitx.account.onboarding()["jwt"]
+result = rabbitx.account.onboarding().result()
+token = result["jwt"]
 
 print(f"Token: {token}")

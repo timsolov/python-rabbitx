@@ -12,7 +12,8 @@ from rabbitx.ws import WS
 rabbitx = RabbitX(
     network=consts.ETHEREUM_MAINNET, api_key=ApiKey.from_file(".apikey/apiKey.json")
 )
-token = rabbitx.account.renew_jwt_token()["jwt"]
+result = rabbitx.account.renew_jwt_token().result()
+token = result["jwt"]
 
 
 def on_message(channel, data):

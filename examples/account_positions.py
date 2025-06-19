@@ -10,6 +10,6 @@ from rabbitx.apikey import ApiKey
 rabbitx = RabbitX(
     network=consts.ETHEREUM_MAINNET, api_key=ApiKey.from_file(".apikey/apiKey.json")
 )
-positions = rabbitx.account.positions()
+positions = rabbitx.account.positions().result()
 
 print(f"Positions: {positions}")

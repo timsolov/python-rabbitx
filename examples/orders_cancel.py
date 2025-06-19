@@ -13,6 +13,6 @@ rabbitx = RabbitX(
 )
 
 # Replace with real values as needed
-canceled = rabbitx.orders.cancel(market_id="BTC-USD", order_id="BTC-USD@1234")
+canceled = rabbitx.orders.cancel(market_id="BTC-USD", order_id="BTC-USD@1234").result()
 
 print(f"Order canceled: {canceled}")
