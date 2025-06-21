@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 from .channel_handler import ChannelHandler
 
 
@@ -38,7 +38,7 @@ class Positions(ChannelHandler):
             if self.on_update:
                 self.on_update(market_id, position)
 
-    def get_position(self, market_id: str) -> dict | None:
+    def get_position(self, market_id: str) -> Union[dict, None]:
         """
         Get a position by market_id
 

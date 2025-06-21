@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 from .channel_handler import ChannelHandler
 
 
@@ -64,7 +64,7 @@ class OpenedOrders(ChannelHandler):
                 orders.append(self.orders[market_id][order_id])
         return orders
 
-    def get_order(self, market_id: str, order_id: str) -> dict | None:
+    def get_order(self, market_id: str, order_id: str) -> Union[dict, None]:
         """
         Get an order by market_id and order_id
 

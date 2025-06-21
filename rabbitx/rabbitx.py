@@ -7,6 +7,7 @@ from .orders import Orders, AsyncOrders
 from .markets import Markets, AsyncMarkets
 from .account import Account, AsyncAccount
 from .vaults import Vaults, AsyncVaults
+from typing import Union
 
 
 class RabbitX:
@@ -32,9 +33,9 @@ class RabbitX:
     def __init__(
         self,
         network: str,
-        wallet: Wallet | None = None,
-        api_key: ApiKey | None = None,
-        base_url: str | None = None,
+        wallet: Union[Wallet, None] = None,
+        api_key: Union[ApiKey, None] = None,
+        base_url: Union[str, None] = None,
     ):
         """
         :param network: The network to use (supported: "ethereum", "ethereum-sepolia", "blast", "blast-sepolia")
@@ -103,9 +104,9 @@ class AsyncRabbitX(RabbitX):
     def __init__(
         self,
         network: str,
-        wallet: Wallet | None = None,
-        api_key: ApiKey | None = None,
-        base_url: str | None = None,
+        wallet: Union[Wallet, None] = None,
+        api_key: Union[ApiKey, None] = None,
+        base_url: Union[str, None] = None,
     ):
         super().__init__(network, wallet, api_key, base_url)
 

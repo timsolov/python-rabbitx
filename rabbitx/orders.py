@@ -1,4 +1,4 @@
-from typing import TypedDict, Literal, Optional, List
+from typing import TypedDict, Literal, Optional, List, Union
 from .transport import Transport
 from decimal import Decimal
 from .response import single_or_fail, multiple_or_fail
@@ -45,9 +45,9 @@ class CreateOrderParams(TypedDict):
     market_id: str
     type: OrderType
     side: OrderSide
-    price: Decimal | str | float
-    size: Decimal | str | float
-    trigger_price: Optional[Decimal | str | float]
+    price: Union[Decimal, str, float]
+    size: Union[Decimal, str, float]
+    trigger_price: Optional[Union[Decimal, str, float]]
     time_in_force: Optional[TypeInForce]
 
 
@@ -65,8 +65,8 @@ class AmendOrderParams(TypedDict):
     order_id: str
     client_order_id: Optional[str] = None
     market_id: str
-    price: Optional[Decimal | float] = None
-    size: Optional[Decimal | float] = None
+    price: Optional[Union[Decimal, float]] = None
+    size: Optional[Union[Decimal, float]] = None
     trigger_price: Optional[Decimal] = None
     size_percent: Optional[Decimal] = None
 
@@ -235,13 +235,13 @@ class Orders(BaseOrders):
         :param order_id: Order identifier
         :type order_id: str
         :param price: Optional new price
-        :type price: Decimal | str | float
+        :type price: Union[Decimal, str, float]
         :param size: Optional new size
-        :type size: Decimal | str | float
+        :type size: Union[Decimal, str, float]
         :param trigger_price: Optional new trigger price
-        :type trigger_price: Decimal | str | float
+        :type trigger_price: Union[Decimal, str, float]
         :param size_percent: Optional new size percentage
-        :type size_percent: Decimal | str | float
+        :type size_percent: Union[Decimal, str, float]
         :return: The amended order
         :rtype: SingleResponse
 

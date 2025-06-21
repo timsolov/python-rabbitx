@@ -1,5 +1,5 @@
 from BTrees.OOBTree import OOBTree as BTree
-from typing import Callable
+from typing import Callable, Union
 from .channel_handler import ChannelHandler
 from decimal import Decimal
 
@@ -62,7 +62,7 @@ class Orderbook(ChannelHandler):
                         self.market_id, "long", Decimal(price), Decimal(amount)
                     )
 
-    def best_ask(self) -> float | None:
+    def best_ask(self) -> Union[float, None]:
         """
         Get the best ask price
 
@@ -73,7 +73,7 @@ class Orderbook(ChannelHandler):
             self.orderbook["asks"].minKey() if len(self.orderbook["asks"]) > 0 else None
         )
 
-    def best_bid(self) -> float | None:
+    def best_bid(self) -> Union[float, None]:
         """
         Get the best bid price
 

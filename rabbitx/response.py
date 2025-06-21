@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, Union, List
 from pydantic import BaseModel
 
 SHOW_REQUEST_ID = os.getenv("SHOW_REQUEST_ID") or False
@@ -15,7 +15,7 @@ class BadResult(Exception):
 
 class APIResponse(BaseModel):
     success: bool
-    result: Optional[list[dict | bool]] = None
+    result: Optional[List[Union[dict, bool]]] = None
     request_id: Optional[str] = None
     pagination: Optional[dict] = None
 

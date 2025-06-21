@@ -1,13 +1,10 @@
 from rabbitx.signer import Signer
 import json
 import os
-import urllib3
 from decimal import Decimal
 import logging
 import httpx
 from abc import ABC, abstractmethod
-
-urllib3.disable_warnings()
 
 DEBUG = os.getenv("DEBUG", False)
 
@@ -170,6 +167,7 @@ class SyncTransport(Transport):
         self.client.headers = self.signer.headers(method, endpoint, body)
         self.client.headers.update(self.headers)
         self.client.headers.update(headers)
+        self.client.headers.update({"X-RBT-Client": "desktop"})
 
         body_json = json.dumps(body, indent=2, cls=CustomEncoder)
 

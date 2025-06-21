@@ -9,3 +9,4 @@ data
 __pycache__
 .wallet*
 .apikey
+Makefile.override.mk
