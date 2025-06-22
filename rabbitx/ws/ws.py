@@ -138,7 +138,7 @@ class WS:
         if channel not in self.handlers:
             self.handlers[channel] = []
         self.handlers[channel].append(handler)
-        
+
         if not self.connected and channel not in self.channels:
             self.channels.append(channel)
             return

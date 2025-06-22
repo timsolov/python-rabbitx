@@ -257,7 +257,7 @@ class AsyncWS:
         if not self.connected and channel not in self.channels:
             self.channels.append(channel)
             return
-        
+
         async def on_subscribe(msg):
             if DEBUG:
                 logger.debug("Subscribed to %s", channel)
