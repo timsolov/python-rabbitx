@@ -44,6 +44,30 @@ class SingleResponse:
 
 
 class MultipleResponse:
+    """
+    MultipleResponse class.
+
+    This class is a wrapper around the RabbitX multiple response API.
+
+    Attributes
+    ----------
+    response : APIResponse
+        The response object
+
+    Example:
+    .. code-block:: python
+
+        response = rabbitx.orders.list(
+            market_id="BTC-USD",
+            status=["open"],
+        )
+
+        print(response.result())
+
+        while response.has_next_page:
+            response = response.next_page()
+            print(response.result())
+    """
     def __init__(
         self,
         response: APIResponse,
@@ -140,3 +164,48 @@ def multiple_or_fail(
         raise BadResult(response)
 
     return MultipleResponse(response, next_page_func)
+
+
+def collect_pages(response: MultipleResponse) -> list:
+    """
+    Helper function to collect all the pages from a MultipleResponse object.
+
+    Example:
+    .. code-block:: python
+
+        response = rabbitx.orders.list(
+            market_id="BTC-USD",
+            status=["open"],
+        )
+
+        for order in collect_pages(response):
+            print(order)
+    """
+    results = response.result()
+    while response.has_next_page:
+        response = response.next_page()
+        results.extend(response.result())
+    return results
+
+async def collect_pages_async(response: MultipleResponse) -> list:
+    """
+    Helper function to collect all the pages from a MultipleResponse object.
+
+    Async version of collect_pages.
+
+    Example:
+    .. code-block:: python
+
+        response = rabbitx.orders.list(
+            market_id="BTC-USD",
+            status=["open"],
+        )
+
+        for order in await collect_pages_async(response):
+            print(order)
+    """
+    results = response.result()
+    while response.has_next_page:
+        response = await response.next_page()
+        results.extend(response.result())
+    return results
