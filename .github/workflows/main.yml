@@ -1,4 +1,4 @@
-name: Test
+name: Main
 
 on:
   push:
@@ -6,24 +6,19 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Tests and linter
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.13", "3.12", "3.11", "3.10", "3.9"]
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+    - name: Install the 0.6.2 version of uv
+      uses: astral-sh/setup-uv@v6
       with:
-        python-version: ${{ matrix.python-version }}
+        version: "0.6.2"
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install uv
-        uv pip sync uv.lock
+        uv sync
+        uv pip install -e ".[dev]"
     - name: Run tests
       run: |
         uv run pytest
