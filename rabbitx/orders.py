@@ -374,13 +374,16 @@ class Orders(BaseOrders):
         if pagination:
             request_params.update(pagination)
 
-        response = self.transport.get("/fills", params=request_params if request_params else None)
+        response = self.transport.get(
+            "/fills", params=request_params if request_params else None
+        )
         response.raise_for_status()
 
         def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
             return self.fills(pagination=pagination, **params)
 
         return multiple_or_fail(response.json(), next_page_func)
+
 
 class AsyncOrders(BaseOrders):
     __doc__ = Orders.__doc__
@@ -444,12 +447,14 @@ class AsyncOrders(BaseOrders):
         if pagination:
             request_params.update(pagination)
 
-        response = await self.transport.get("/fills", params=request_params if request_params else None)
+        response = await self.transport.get(
+            "/fills", params=request_params if request_params else None
+        )
         response.raise_for_status()
-        
+
         def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
             return self.fills(pagination=pagination, **params)
-        
+
         return multiple_or_fail(response.json(), next_page_func)
 
     fills.__doc__ = Orders.fills.__doc__
