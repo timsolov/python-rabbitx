@@ -177,6 +177,67 @@ class TestOrders:
         orders.cancel_all()
         mock_transport.delete.assert_called_once_with("/orders/cancel_all", body={})
 
+    def test_fills(self, orders: Orders, mock_transport: MagicMock):
+        orders.fills(market_id="BTC-USD")
+        mock_transport.get.assert_called_once_with(
+            "/fills", params={"market_id": "BTC-USD"}
+        )
+
+    def test_fills_with_pagination(self, orders: Orders, mock_transport: MagicMock):
+        first_page_response = {
+            "success": True,
+            "result": [{"id": "1"}],
+            "pagination": {
+                "page": 1,
+                "limit": 1,
+                "has_next_page": True,
+                "order": "DESC",
+            },
+        }
+        second_page_response = {
+            "success": True,
+            "result": [{"id": "2"}],
+            "pagination": {
+                "page": 2,
+                "limit": 1,
+                "has_next_page": False,
+                "order": "DESC",
+            },
+        }
+
+        resp1 = MagicMock()
+        resp1.json.return_value = first_page_response
+        resp1.raise_for_status.return_value = None
+
+        resp2 = MagicMock()
+        resp2.json.return_value = second_page_response
+        resp2.raise_for_status.return_value = None
+
+        mock_transport.get.side_effect = [resp1, resp2]
+
+        response = orders.fills(market_id="BTC-USD")
+
+        assert response.has_next_page is True
+        assert response.result()[0]["id"] == "1"
+
+        next_page_response = response.next_page()
+
+        assert next_page_response.has_next_page is False
+        assert next_page_response.result()[0]["id"] == "2"
+
+        assert mock_transport.get.call_count == 2
+
+        _, call_one_kwargs = mock_transport.get.call_args_list[0]
+        assert call_one_kwargs["params"] == {"market_id": "BTC-USD"}
+
+        _, call_two_kwargs = mock_transport.get.call_args_list[1]
+        assert call_two_kwargs["params"] == {
+            "market_id": "BTC-USD",
+            "p_page": 2,
+            "p_limit": 1,
+            "p_order": "DESC",
+        }
+
 
 @pytest.mark.asyncio
 class TestAsyncOrders:
@@ -296,3 +357,68 @@ class TestAsyncOrders:
         mock_async_transport.delete.assert_called_once_with(
             "/orders/cancel_all", body={}
         )
+
+    async def test_fills(
+        self, async_orders: AsyncOrders, mock_async_transport: AsyncMock
+    ):
+        await async_orders.fills(market_id="BTC-USD")
+        mock_async_transport.get.assert_called_once_with(
+            "/fills", params={"market_id": "BTC-USD"}
+        )
+
+    async def test_fills_with_pagination(
+        self, async_orders: AsyncOrders, mock_async_transport: AsyncMock
+    ):
+        first_page_response = {
+            "success": True,
+            "result": [{"id": "1"}],
+            "pagination": {
+                "page": 1,
+                "limit": 1,
+                "has_next_page": True,
+                "order": "DESC",
+            },
+        }
+        second_page_response = {
+            "success": True,
+            "result": [{"id": "2"}],
+            "pagination": {
+                "page": 2,
+                "limit": 1,
+                "has_next_page": False,
+                "order": "DESC",
+            },
+        }
+
+        resp1 = AsyncMock()
+        resp1.json = MagicMock(return_value=first_page_response)
+        resp1.raise_for_status = MagicMock()
+
+        resp2 = AsyncMock()
+        resp2.json = MagicMock(return_value=second_page_response)
+        resp2.raise_for_status = MagicMock()
+
+        mock_async_transport.get.side_effect = [resp1, resp2]
+
+        response = await async_orders.fills(market_id="BTC-USD")
+
+        assert response.has_next_page is True
+        assert response.result()[0]["id"] == "1"
+
+        next_page_response = await response.next_page()
+
+        assert next_page_response.has_next_page is False
+        assert next_page_response.result()[0]["id"] == "2"
+
+        assert mock_async_transport.get.call_count == 2
+
+        _, call_one_kwargs = mock_async_transport.get.call_args_list[0]
+        assert call_one_kwargs["params"] == {"market_id": "BTC-USD"}
+
+        _, call_two_kwargs = mock_async_transport.get.call_args_list[1]
+        assert call_two_kwargs["params"] == {
+            "market_id": "BTC-USD",
+            "p_page": 2,
+            "p_limit": 1,
+            "p_order": "DESC",
+        }

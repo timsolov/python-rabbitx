@@ -78,6 +78,12 @@ class CancelOrderParams(TypedDict):
     market_id: str
 
 
+class FillsParams(TypedDict):
+    market_id: Optional[str]
+    start_time: Optional[int]
+    end_time: Optional[int]
+
+
 class BaseOrders:
     def __init__(self, transport: Transport):
         self.transport = transport
@@ -332,6 +338,49 @@ class Orders(BaseOrders):
         response.raise_for_status()
         return single_or_fail(response.json())
 
+    def fills(
+        self, *, pagination: Optional[PaginationQuery] = None, **params: FillsParams
+    ) -> MultipleResponse:
+        """
+        Get all fills
+
+        :return: The fills
+        :rtype: MultipleResponse
+
+        Response:
+
+        .. code-block:: python
+
+            [
+                {
+                    "id": "BTC-USD-82",
+                    "profile_id": 84980,
+                    "market_id": "BTC-USD",
+                    "order_id": "BTC-USD@1147",
+                    "timestamp": 1749801319584077,
+                    "trade_id": "BTC-USD-81",
+                    "price": "103120",
+                    "size": "0.0002",
+                    "side": "short",
+                    "is_maker": true,
+                    "fee": "0",
+                    "liquidation": false,
+                    "client_order_id": ""
+                }
+            ]
+        """
+
+        request_params = dict(params)
+        if pagination:
+            request_params.update(pagination)
+
+        response = self.transport.get("/fills", params=request_params if request_params else None)
+        response.raise_for_status()
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.fills(pagination=pagination, **params)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
 class AsyncOrders(BaseOrders):
     __doc__ = Orders.__doc__
@@ -387,3 +436,20 @@ class AsyncOrders(BaseOrders):
         return single_or_fail(response.json())
 
     cancel_all.__doc__ = Orders.cancel_all.__doc__
+
+    async def fills(
+        self, *, pagination: Optional[PaginationQuery] = None, **params: FillsParams
+    ) -> MultipleResponse:
+        request_params = dict(params)
+        if pagination:
+            request_params.update(pagination)
+
+        response = await self.transport.get("/fills", params=request_params if request_params else None)
+        response.raise_for_status()
+        
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.fills(pagination=pagination, **params)
+        
+        return multiple_or_fail(response.json(), next_page_func)
+
+    fills.__doc__ = Orders.fills.__doc__
