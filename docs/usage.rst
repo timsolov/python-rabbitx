@@ -14,6 +14,8 @@ The `examples` directory contains scripts demonstrating the most common API endp
      - Authenticate using a private key
    * - :ghfile:`examples/account_onboarding.py`
      - Onboard a new account
+   * - :ghfile:`examples/market_candles.py`
+     - Get market candles
    * - :ghfile:`examples/account_positions.py`
      - Retrieve account positions
    * - :ghfile:`examples/markets_list.py`
@@ -42,6 +44,8 @@ The `examples` directory contains scripts demonstrating the most common API endp
      - Authenticate using an API key (async)
    * - :ghfile:`examples/async_auth_wallet.py`
      - Authenticate using a wallet (async)
+   * - :ghfile:`examples/async_market_candles.py`
+     - Get market candles (async)
    * - :ghfile:`examples/async_account_positions.py`
      - Retrieve account positions (async)
    * - :ghfile:`examples/async_markets_list.py`

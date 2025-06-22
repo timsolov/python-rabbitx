@@ -134,8 +134,22 @@ print(f"Canceled Order: {canceled}")
 # Cancel all orders
 rabbitx.orders.cancel_all().result()
 
-# WebSocket Integration Example
+# Get list of fills
+fills = rabbitx.orders.fills(
+    market_id="BTC-USD",
+).result()
+print(f"Fills: {fills}")
 
+# Get market candles
+candles = rabbitx.markets.candles(
+    market_id="BTC-USD",
+    start_time=1,
+    end_time=int(time.time()),
+    period="1h",
+).result()
+print(f"Candles: {candles}")
+
+# WebSocket Integration Example
 def handle_orderbook(market_id: str, side: str, price: float, amount: float):
     print(f"Orderbook Update - {market_id} {side}: {price} @ {amount}")
 

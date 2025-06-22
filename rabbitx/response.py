@@ -68,6 +68,7 @@ class MultipleResponse:
             response = response.next_page()
             print(response.result())
     """
+
     def __init__(
         self,
         response: APIResponse,
@@ -142,7 +143,8 @@ def single_or_fail(response) -> SingleResponse:
 
 
 def multiple_or_fail(
-    response, next_page_func: Callable[[PaginationQuery], MultipleResponse]
+    response,
+    next_page_func: Union[Callable[[PaginationQuery], MultipleResponse], None] = None,
 ) -> MultipleResponse:
     """
     Returns a MultipleResponses object if the response is successful and has multiple results.
@@ -186,6 +188,7 @@ def collect_pages(response: MultipleResponse) -> list:
         response = response.next_page()
         results.extend(response.result())
     return results
+
 
 async def collect_pages_async(response: MultipleResponse) -> list:
     """
