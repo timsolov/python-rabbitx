@@ -13,11 +13,15 @@ dependencies = [
     "websockets>=15.0.1",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-asyncio",
+]
+
+[tool.setuptools]
+packages = ["rabbitx"]
+
 [tool.ruff]
 preview = true
 lint.ignore = ["E402"]
-
-[dependency-groups]
-dev = [
-    "pytest>=8.4.0",
-]

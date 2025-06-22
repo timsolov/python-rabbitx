@@ -6,6 +6,7 @@ from rabbitx.response import (
     BadResult,
 )
 from pydantic import ValidationError
+from unittest.mock import MagicMock
 
 
 # --- single_or_fail tests ---
@@ -67,7 +68,7 @@ def test_multiple_or_fail_success():
         "request_id": "abc123",
         "pagination": None,
     }
-    multiple = multiple_or_fail(response)
+    multiple = multiple_or_fail(response, MagicMock())
     assert multiple.result() == [{"foo": 1}, {"foo": 2}]
 
 
@@ -79,10 +80,10 @@ def test_multiple_or_fail_unsuccessful():
         "pagination": None,
     }
     with pytest.raises(UnsuccessfulResponse):
-        multiple_or_fail(response)
+        multiple_or_fail(response, MagicMock())
 
 
 def test_multiple_or_fail_no_result():
-    response = {"success": True, "result": [], "request_id": None, "pagination": None}
+    response = {"success": True, "result": None, "request_id": None, "pagination": None}
     with pytest.raises(BadResult):
-        multiple_or_fail(response)
+        multiple_or_fail(response, MagicMock())

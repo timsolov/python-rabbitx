@@ -7,3 +7,7 @@ lint:
 .PHONY: format
 format:
 	uv run ruff format .
+
+.PHONY: test
+test:
+	uv run pytest
