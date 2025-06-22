@@ -223,7 +223,6 @@ class Vaults:
     def history(
         self,
         *,
-        pagination: Optional[PaginationQuery] = None,
         vault_profile_id: int,
         type: Literal["share_price", "nav"] = "nav",
         range: Literal["1h", "1d", "1w", "1m", "1y", "all"] = "1d",
@@ -252,7 +251,7 @@ class Vaults:
             ]
         """
 
-        request_params = dict(pagination)
+        request_params = {}
         if vault_profile_id:
             request_params["vault_profile_id"] = vault_profile_id
         if type:
@@ -262,7 +261,7 @@ class Vaults:
 
         response = self.transport.get(
             "/vaults/history",
-            params=request_params,
+            params=request_params if request_params else None,
         )
         response.raise_for_status()
 
@@ -282,8 +281,8 @@ class Vaults:
         """Get fills for a vault
 
         :param vault_profile_id: Vault profile ID (required)
-        :param start_time: Start time (optional)
-        :param end_time: End time (optional)
+        :param start_time: Start time unix timestamp in seconds (optional)
+        :param end_time: End time unix timestamp in seconds (optional)
         :return: Fills for a vault
         :rtype: MultipleResponse
 
@@ -314,9 +313,11 @@ class Vaults:
         if vault_profile_id:
             request_params["vault_profile_id"] = vault_profile_id
         if start_time:
-            request_params["start_time"] = start_time
+            request_params["start_time"] = (
+                start_time * 1000000
+            )  # convert to microseconds
         if end_time:
-            request_params["end_time"] = end_time
+            request_params["end_time"] = end_time * 1000000  # convert to microseconds
 
         response = self.transport.get(
             "/vaults/fills",
@@ -340,8 +341,8 @@ class Vaults:
         """Get funding for a vault
 
         :param vault_profile_id: Vault profile ID (required)
-        :param start_time: Start time (optional)
-        :param end_time: End time (optional)
+        :param start_time: Start time unix timestamp in seconds (optional)
+        :param end_time: End time unix timestamp in seconds (optional)
         :return: Funding for a vault
         :rtype: MultipleResponse
 
@@ -371,9 +372,11 @@ class Vaults:
         if vault_profile_id:
             request_params["vault_profile_id"] = vault_profile_id
         if start_time:
-            request_params["start_time"] = start_time
+            request_params["start_time"] = (
+                start_time * 1000000
+            )  # convert to microseconds
         if end_time:
-            request_params["end_time"] = end_time
+            request_params["end_time"] = end_time * 1000000  # convert to microseconds
 
         response = self.transport.get(
             "/vaults/funding",
@@ -432,11 +435,10 @@ class AsyncVaults:
     async def all_balanceops(
         self,
         *,
-        pagination: Optional[PaginationQuery] = None,
         ops_types: List[str],
         vault_profile_id: int = None,
     ) -> MultipleResponse:
-        request_params = dict(pagination)
+        request_params = {}
         if ops_types:
             request_params["ops_type"] = ops_types
         if vault_profile_id:
@@ -444,7 +446,7 @@ class AsyncVaults:
 
         response = await self.transport.get(
             "/vaults/all-balanceops",
-            params=request_params,
+            params=request_params if request_params else None,
         )
         response.raise_for_status()
 
@@ -522,9 +524,11 @@ class AsyncVaults:
         if vault_profile_id:
             request_params["vault_profile_id"] = vault_profile_id
         if start_time:
-            request_params["start_time"] = start_time
+            request_params["start_time"] = (
+                start_time * 1000000
+            )  # convert to microseconds
         if end_time:
-            request_params["end_time"] = end_time
+            request_params["end_time"] = end_time * 1000000  # convert to microseconds
 
         response = await self.transport.get(
             "/vaults/fills",
@@ -551,9 +555,11 @@ class AsyncVaults:
         if vault_profile_id:
             request_params["vault_profile_id"] = vault_profile_id
         if start_time:
-            request_params["start_time"] = start_time
+            request_params["start_time"] = (
+                start_time * 1000000
+            )  # convert to microseconds
         if end_time:
-            request_params["end_time"] = end_time
+            request_params["end_time"] = end_time * 1000000  # convert to microseconds
 
         response = await self.transport.get(
             "/vaults/funding",
