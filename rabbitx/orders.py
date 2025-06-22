@@ -1,7 +1,8 @@
 from typing import TypedDict, Literal, Optional, List, Union
 from .transport import Transport
 from decimal import Decimal
-from .response import single_or_fail, multiple_or_fail
+from .response import single_or_fail, multiple_or_fail, MultipleResponse, SingleResponse
+from .request import PaginationQuery
 
 OrderSide = Literal[
     "long",
@@ -82,7 +83,9 @@ class BaseOrders:
         self.transport = transport
 
     def _fix_create_params(self, params: CreateOrderParams):
-        if "price" in params and (isinstance(params["price"], Decimal) or isinstance(params["price"], str)):
+        if "price" in params and (
+            isinstance(params["price"], Decimal) or isinstance(params["price"], str)
+        ):
             params["price"] = float(params["price"])
 
         if isinstance(params["size"], Decimal) or isinstance(params["size"], str):
@@ -124,7 +127,7 @@ class Orders(BaseOrders):
         The transport object
     """
 
-    def create(self, **params: CreateOrderParams):
+    def create(self, **params: CreateOrderParams) -> SingleResponse:
         """
         Create a new order
 
@@ -172,7 +175,12 @@ class Orders(BaseOrders):
         response.raise_for_status()
         return single_or_fail(response.json())
 
-    def list(self, **params: ListOrdersParams):
+    def list(
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        **params: ListOrdersParams,
+    ) -> MultipleResponse:
         """
         Get list of orders
 
@@ -192,6 +200,8 @@ class Orders(BaseOrders):
         :type client_order_id: str
         :param order_type: Filter by order types
         :type order_type: List[OrderType]
+        :param pagination: Optional pagination parameters
+        :type pagination: PaginationQuery
         :return: The list of orders
         :rtype: MultipleResponse
 
@@ -220,11 +230,21 @@ class Orders(BaseOrders):
                 }
             ]
         """
-        response = self.transport.get("/orders", params=params if params else None)
-        response.raise_for_status()
-        return multiple_or_fail(response.json())
+        request_params = dict(params)
+        if pagination:
+            request_params.update(pagination)
 
-    def amend(self, **params: AmendOrderParams):
+        response = self.transport.get(
+            "/orders", params=request_params if request_params else None
+        )
+        response.raise_for_status()
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.list(pagination=pagination, **params)
+
+        return multiple_or_fail(response.json(), next_page_func)
+
+    def amend(self, **params: AmendOrderParams) -> SingleResponse:
         """
         Amend an existing order
 
@@ -263,7 +283,7 @@ class Orders(BaseOrders):
         response.raise_for_status()
         return single_or_fail(response.json())
 
-    def cancel(self, **params: CancelOrderParams):
+    def cancel(self, **params: CancelOrderParams) -> SingleResponse:
         """
         Cancel specific order
 
@@ -294,7 +314,7 @@ class Orders(BaseOrders):
         response.raise_for_status()
         return single_or_fail(response.json())
 
-    def cancel_all(self):
+    def cancel_all(self) -> SingleResponse:
         """Cancel all open orders
 
         https://docs.rabbitx.com/api-documentation/private-endpoints/orders#cancel-all-orders
@@ -316,7 +336,7 @@ class Orders(BaseOrders):
 class AsyncOrders(BaseOrders):
     __doc__ = Orders.__doc__
 
-    async def create(self, **params: CreateOrderParams):
+    async def create(self, **params: CreateOrderParams) -> SingleResponse:
         self._fix_create_params(params)
         response = await self.transport.post("/orders", body=params)
         response.raise_for_status()
@@ -324,16 +344,29 @@ class AsyncOrders(BaseOrders):
 
     create.__doc__ = Orders.create.__doc__
 
-    async def list(self, **params: ListOrdersParams):
+    async def list(
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        **params: ListOrdersParams,
+    ) -> MultipleResponse:
+        request_params = dict(params)
+        if pagination:
+            request_params.update(pagination)
+
         response = await self.transport.get(
-            "/orders", params=params if params else None
+            "/orders", params=request_params if request_params else None
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.list(pagination=pagination, **params)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     list.__doc__ = Orders.list.__doc__
 
-    async def amend(self, **params: AmendOrderParams):
+    async def amend(self, **params: AmendOrderParams) -> SingleResponse:
         self._fix_amend_params(params)
         response = await self.transport.put("/orders", body=params)
         response.raise_for_status()
@@ -341,14 +374,14 @@ class AsyncOrders(BaseOrders):
 
     amend.__doc__ = Orders.amend.__doc__
 
-    async def cancel(self, **params: CancelOrderParams):
+    async def cancel(self, **params: CancelOrderParams) -> SingleResponse:
         response = await self.transport.delete("/orders", body=params)
         response.raise_for_status()
         return single_or_fail(response.json())
 
     cancel.__doc__ = Orders.cancel.__doc__
 
-    async def cancel_all(self):
+    async def cancel_all(self) -> SingleResponse:
         response = await self.transport.delete("/orders/cancel_all", body={})
         response.raise_for_status()
         return single_or_fail(response.json())

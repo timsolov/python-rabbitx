@@ -1,6 +1,8 @@
+from typing import Optional
 from .transport import Transport
 from .signer import JWTTokenSigner, EIP712Signer
-from .response import single_or_fail, multiple_or_fail
+from .response import single_or_fail, multiple_or_fail, MultipleResponse, SingleResponse
+from .request import PaginationQuery
 
 
 class BaseAccount:
@@ -53,7 +55,7 @@ class Account(BaseAccount):
         The transport object
     """
 
-    def onboarding(self):
+    def onboarding(self) -> SingleResponse:
         """
         Onboard a new user or login an existing user
 
@@ -144,7 +146,7 @@ class Account(BaseAccount):
 
         return result
 
-    def renew_jwt_token(self):
+    def renew_jwt_token(self) -> SingleResponse:
         """
         Renew the JWT token.
 
@@ -173,7 +175,7 @@ class Account(BaseAccount):
 
         return result
 
-    def info(self):
+    def info(self) -> SingleResponse:
         """
         Get the profile information
 
@@ -243,7 +245,9 @@ class Account(BaseAccount):
         response.raise_for_status()
         return single_or_fail(response.json())
 
-    def positions(self):
+    def positions(
+        self, *, pagination: Optional[PaginationQuery] = None
+    ) -> MultipleResponse:
         """
         Get all positions
 
@@ -271,16 +275,19 @@ class Account(BaseAccount):
             ]
         """
 
-        response = self.transport.get("/positions")
+        response = self.transport.get("/positions", params=pagination)
         response.raise_for_status()
 
-        return multiple_or_fail(response.json())
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.positions(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
 
 class AsyncAccount(BaseAccount):
     __doc__ = Account.__doc__
 
-    async def onboarding(self):
+    async def onboarding(self) -> SingleResponse:
         request, headers = self._prepare_onboarding_request()
 
         response = await self.transport.post(
@@ -296,7 +303,7 @@ class AsyncAccount(BaseAccount):
 
     onboarding.__doc__ = Account.onboarding.__doc__
 
-    async def renew_jwt_token(self):
+    async def renew_jwt_token(self) -> SingleResponse:
         request, is_client = self._prepare_renew_jwt_token_request()
 
         response = await self.transport.post("/jwt", body=request)
@@ -311,16 +318,22 @@ class AsyncAccount(BaseAccount):
 
     renew_jwt_token.__doc__ = Account.renew_jwt_token.__doc__
 
-    async def info(self):
+    async def info(self) -> SingleResponse:
         response = await self.transport.get("/account")
         response.raise_for_status()
         return single_or_fail(response.json())
-    
+
     info.__doc__ = Account.info.__doc__
 
-    async def positions(self):
-        response = await self.transport.get("/positions")
+    async def positions(
+        self, *, pagination: Optional[PaginationQuery] = None
+    ) -> MultipleResponse:
+        response = await self.transport.get("/positions", params=pagination)
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.positions(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     positions.__doc__ = Account.positions.__doc__

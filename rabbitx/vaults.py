@@ -1,6 +1,7 @@
-from typing import Literal, List
+from typing import Literal, List, Optional
 from .transport import Transport, AsyncTransport
-from .response import multiple_or_fail
+from .response import multiple_or_fail, MultipleResponse
+from .request import PaginationQuery
 
 
 class Vaults:
@@ -18,7 +19,7 @@ class Vaults:
     def __init__(self, transport: Transport):
         self.transport = transport
 
-    def list(self):
+    def list(self, *, pagination: Optional[PaginationQuery] = None) -> MultipleResponse:
         """Get list of vaults
 
         :return: List of vaults
@@ -45,11 +46,20 @@ class Vaults:
                 }
             ]
         """
-        response = self.transport.get("/vaults")
+        response = self.transport.get("/vaults", params=pagination)
         response.raise_for_status()
-        return multiple_or_fail(response.json())
 
-    def holdings(self, vault_profile_id: int = None):
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.list(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
+
+    def holdings(
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        vault_profile_id: int = None,
+    ) -> MultipleResponse:
         """Get holdings in vaults for current profile
 
         :param vault_profile_id: Vault profile ID (optional)
@@ -78,14 +88,29 @@ class Vaults:
                 }
             ]
         """
+
+        request_params = dict(pagination)
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+
         response = self.transport.get(
             "/vaults/holdings",
-            params={"vault_profile_id": vault_profile_id} if vault_profile_id else None,
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
 
-    def all_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.holdings(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
+
+    def all_balanceops(
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        ops_types: List[str],
+        vault_profile_id: int = None,
+    ) -> MultipleResponse:
         """Get all balance operations
 
         :param ops_types: List of operation types to filter by (required) ['stake', 'unstake']
@@ -119,16 +144,31 @@ class Vaults:
                 }
             ]
         """
+
+        request_params = dict(pagination)
+        if ops_types:
+            request_params["ops_type"] = ops_types
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+
         response = self.transport.get(
             "/vaults/all-balanceops",
-            params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
-            if ops_types or vault_profile_id
-            else None,
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
 
-    def user_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.all_balanceops(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
+
+    def user_balanceops(
+        self,
+        *,
+        ops_types: List[str],
+        vault_profile_id: int = None,
+        pagination: Optional[PaginationQuery] = None,
+    ) -> MultipleResponse:
         """Get user balance operations
 
         :param ops_types: List of operation types to filter by (required) ['stake', 'unstake']
@@ -162,21 +202,32 @@ class Vaults:
                 }
             ]
         """
+
+        request_params = dict(pagination)
+        if ops_types:
+            request_params["ops_type"] = ops_types
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+
         response = self.transport.get(
             "/vaults/balanceops",
-            params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
-            if ops_types or vault_profile_id
-            else None,
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.user_balanceops(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     def history(
         self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
         vault_profile_id: int,
         type: Literal["share_price", "nav"] = "nav",
         range: Literal["1h", "1d", "1w", "1m", "1y", "all"] = "1d",
-    ):
+    ) -> MultipleResponse:
         """Get history of a vault
 
         :param vault_profile_id: Vault profile ID (required)
@@ -200,16 +251,34 @@ class Vaults:
                 }
             ]
         """
+
+        request_params = dict(pagination)
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+        if type:
+            request_params["type"] = type
+        if range:
+            request_params["range"] = range
+
         response = self.transport.get(
             "/vaults/history",
-            params={"vault_profile_id": vault_profile_id, "type": type, "range": range},
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.history(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     def fills(
-        self, vault_profile_id: int, start_time: int = None, end_time: int = None
-    ):
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        vault_profile_id: int,
+        start_time: int = None,
+        end_time: int = None,
+    ) -> MultipleResponse:
         """Get fills for a vault
 
         :param vault_profile_id: Vault profile ID (required)
@@ -240,20 +309,34 @@ class Vaults:
                 }
             ]
         """
+
+        request_params = dict(pagination)
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+        if start_time:
+            request_params["start_time"] = start_time
+        if end_time:
+            request_params["end_time"] = end_time
+
         response = self.transport.get(
             "/vaults/fills",
-            params={
-                "vault_profile_id": vault_profile_id,
-                "start_time": start_time,
-                "end_time": end_time,
-            },
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.fills(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     def funding(
-        self, vault_profile_id: int, start_time: int = None, end_time: int = None
-    ):
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        vault_profile_id: int,
+        start_time: int = None,
+        end_time: int = None,
+    ) -> MultipleResponse:
         """Get funding for a vault
 
         :param vault_profile_id: Vault profile ID (required)
@@ -283,16 +366,25 @@ class Vaults:
                 }
             ]
         """
+
+        request_params = dict(pagination)
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+        if start_time:
+            request_params["start_time"] = start_time
+        if end_time:
+            request_params["end_time"] = end_time
+
         response = self.transport.get(
             "/vaults/funding",
-            params={
-                "vault_profile_id": vault_profile_id,
-                "start_time": start_time,
-                "end_time": end_time,
-            },
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.funding(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
 
 class AsyncVaults:
@@ -301,90 +393,177 @@ class AsyncVaults:
     def __init__(self, transport: AsyncTransport):
         self.transport = transport
 
-    async def list(self):
-        response = await self.transport.get("/vaults")
+    async def list(
+        self, *, pagination: Optional[PaginationQuery] = None
+    ) -> MultipleResponse:
+        response = await self.transport.get("/vaults", params=pagination)
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.list(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     list.__doc__ = Vaults.list.__doc__
 
-    async def holdings(self, vault_profile_id: int = None):
+    async def holdings(
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        vault_profile_id: int = None,
+    ) -> MultipleResponse:
+        request_params = dict(pagination)
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+
         response = await self.transport.get(
             "/vaults/holdings",
-            params={"vault_profile_id": vault_profile_id} if vault_profile_id else None,
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.holdings(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     holdings.__doc__ = Vaults.holdings.__doc__
 
-    async def all_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
+    async def all_balanceops(
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        ops_types: List[str],
+        vault_profile_id: int = None,
+    ) -> MultipleResponse:
+        request_params = dict(pagination)
+        if ops_types:
+            request_params["ops_type"] = ops_types
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+
         response = await self.transport.get(
             "/vaults/all-balanceops",
-            params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
-            if ops_types or vault_profile_id
-            else None,
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.all_balanceops(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     all_balanceops.__doc__ = Vaults.all_balanceops.__doc__
 
-    async def user_balanceops(self, ops_types: List[str], vault_profile_id: int = None):
+    async def user_balanceops(
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        ops_types: List[str],
+        vault_profile_id: int = None,
+    ) -> MultipleResponse:
+        request_params = dict(pagination)
+        if ops_types:
+            request_params["ops_type"] = ops_types
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+
         response = await self.transport.get(
             "/vaults/balanceops",
-            params={"ops_type": ops_types, "vault_profile_id": vault_profile_id}
-            if ops_types or vault_profile_id
-            else None,
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.user_balanceops(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     user_balanceops.__doc__ = Vaults.user_balanceops.__doc__
 
     async def history(
         self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
         vault_profile_id: int,
         type: Literal["share_price", "nav"] = "nav",
         range: Literal["1h", "1d", "1w", "1m", "1y", "all"] = "1d",
-    ):
+    ) -> MultipleResponse:
+        request_params = dict(pagination)
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+        if type:
+            request_params["type"] = type
+        if range:
+            request_params["range"] = range
+
         response = await self.transport.get(
             "/vaults/history",
             params={"vault_profile_id": vault_profile_id, "type": type, "range": range},
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.history(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     history.__doc__ = Vaults.history.__doc__
 
     async def fills(
-        self, vault_profile_id: int, start_time: int = None, end_time: int = None
-    ):
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        vault_profile_id: int,
+        start_time: int = None,
+        end_time: int = None,
+    ) -> MultipleResponse:
+        request_params = dict(pagination)
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+        if start_time:
+            request_params["start_time"] = start_time
+        if end_time:
+            request_params["end_time"] = end_time
+
         response = await self.transport.get(
             "/vaults/fills",
-            params={
-                "vault_profile_id": vault_profile_id,
-                "start_time": start_time,
-                "end_time": end_time,
-            },
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.fills(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     fills.__doc__ = Vaults.fills.__doc__
 
     async def funding(
-        self, vault_profile_id: int, start_time: int = None, end_time: int = None
-    ):
+        self,
+        *,
+        pagination: Optional[PaginationQuery] = None,
+        vault_profile_id: int,
+        start_time: int = None,
+        end_time: int = None,
+    ) -> MultipleResponse:
+        request_params = dict(pagination)
+        if vault_profile_id:
+            request_params["vault_profile_id"] = vault_profile_id
+        if start_time:
+            request_params["start_time"] = start_time
+        if end_time:
+            request_params["end_time"] = end_time
+
         response = await self.transport.get(
             "/vaults/funding",
-            params={
-                "vault_profile_id": vault_profile_id,
-                "start_time": start_time,
-                "end_time": end_time,
-            },
+            params=request_params,
         )
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.funding(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     funding.__doc__ = Vaults.funding.__doc__

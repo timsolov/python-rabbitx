@@ -1,5 +1,7 @@
+from typing import Optional
 from .transport import Transport, AsyncTransport
-from .response import single_or_fail, multiple_or_fail
+from .response import single_or_fail, multiple_or_fail, MultipleResponse, SingleResponse
+from .request import PaginationQuery
 
 
 class Markets:
@@ -17,7 +19,7 @@ class Markets:
     def __init__(self, transport: Transport):
         self.transport = transport
 
-    def info(self, market_id: str):
+    def info(self, market_id: str) -> SingleResponse:
         """
         Get market info
 
@@ -70,7 +72,7 @@ class Markets:
         response.raise_for_status()
         return single_or_fail(response.json())
 
-    def list(self):
+    def list(self, *, pagination: Optional[PaginationQuery] = None) -> MultipleResponse:
         """
         Get list of markets
 
@@ -119,9 +121,13 @@ class Markets:
                 }
             ]
         """
-        response = self.transport.get("/markets")
+        response = self.transport.get("/markets", params=pagination)
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.list(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
 
 class AsyncMarkets:
@@ -130,16 +136,22 @@ class AsyncMarkets:
     def __init__(self, transport: AsyncTransport):
         self.transport = transport
 
-    async def info(self, market_id: str):
+    async def info(self, market_id: str) -> SingleResponse:
         response = await self.transport.get("/markets", params={"market_id": market_id})
         response.raise_for_status()
         return single_or_fail(response.json())
 
     info.__doc__ = Markets.info.__doc__
 
-    async def list(self):
-        response = await self.transport.get("/markets")
+    async def list(
+        self, *, pagination: Optional[PaginationQuery] = None
+    ) -> MultipleResponse:
+        response = await self.transport.get("/markets", params=pagination)
         response.raise_for_status()
-        return multiple_or_fail(response.json())
+
+        def next_page_func(pagination: PaginationQuery) -> MultipleResponse:
+            return self.list(pagination=pagination)
+
+        return multiple_or_fail(response.json(), next_page_func)
 
     list.__doc__ = Markets.list.__doc__
