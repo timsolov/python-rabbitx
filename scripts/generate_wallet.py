@@ -1,7 +1,27 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "web3",
+# ]
+# ///
 from web3 import Web3
 import os
 
 w3 = Web3()
+
+root_dir = os.path.dirname(os.path.dirname(__file__))
+
+
+def generate_wallet_file(directory: str):
+    i = 1
+    while True:
+        filename = f"wallet{i}.pk"
+        wallet_file = os.path.join(directory, filename)
+        if not os.path.exists(wallet_file):
+            break
+        i += 1
+
+    return wallet_file
 
 
 def generate_wallet():
@@ -9,8 +29,7 @@ def generate_wallet():
 
     private_key = w3.to_hex(account.key)
 
-    # Create wallet info directory if it doesn't exist
-    wallet_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".wallet")
+    wallet_file = generate_wallet_file(os.path.join(root_dir, ".wallets"))
 
     # Save private key to file
     with open(wallet_file, "w") as f:
