@@ -10,3 +10,5 @@ __pycache__
 .wallet*
 .apikey
 Makefile.override.mk
+build/
+_build/
