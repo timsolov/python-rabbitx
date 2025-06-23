@@ -99,7 +99,24 @@ class RabbitX:
 
 
 class AsyncRabbitX(RabbitX):
-    __doc__ = RabbitX.__doc__
+    """
+    RabbitX Async class.
+
+    This class is a wrapper around the RabbitX API.
+
+    Attributes
+    ----------
+    transport : AsyncTransport
+        The transport object
+    account : AsyncAccount
+        The account object
+    orders : AsyncOrders
+        The orders object
+    vaults : AsyncVaults
+        The vaults object
+    markets : AsyncMarkets
+        The markets object
+    """
 
     def __init__(
         self,

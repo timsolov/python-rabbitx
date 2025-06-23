@@ -18,13 +18,27 @@ Submodules
 
 .. automodule:: rabbitx.transport
    :members:
+   :exclude-members: ABC, abstractmethod
+   :undoc-members:
+   :show-inheritance:
+   :imported-members:
+
+.. automodule:: rabbitx.request
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :imported-members:
+
+.. automodule:: rabbitx.response
+   :members:
+   :exclude-members: BaseModel, PaginationQuery
    :undoc-members:
    :show-inheritance:
    :imported-members:
 
 .. automodule:: rabbitx.account
    :members:
-   :exclude-members: Client
+   :exclude-members: PaginationQuery
    :undoc-members:
    :show-inheritance:
    :imported-members:
@@ -32,7 +46,7 @@ Submodules
 
 .. automodule:: rabbitx.orders
    :members:
-   :exclude-members: Client, TypedDict
+   :exclude-members: TypedDict, PaginationQuery
    :undoc-members:
    :show-inheritance:
    :imported-members:
@@ -40,7 +54,7 @@ Submodules
 
 .. automodule:: rabbitx.vaults
    :members:
-   :exclude-members: Client, TypedDict
+   :exclude-members: TypedDict, PaginationQuery
    :undoc-members:
    :show-inheritance:
    :imported-members:
@@ -48,7 +62,7 @@ Submodules
 
 .. automodule:: rabbitx.markets
    :members:
-   :exclude-members: Client
+   :exclude-members: PaginationQuery, get_args
    :undoc-members:
    :show-inheritance:
    :imported-members:
@@ -56,14 +70,13 @@ Submodules
 
 .. automodule:: rabbitx.apikey
    :members:
-   :exclude-members: Client
    :undoc-members:
    :show-inheritance:
    :imported-members:
 
 .. automodule:: rabbitx.wallet
    :members:
-   :exclude-members: Client, Account
+   :exclude-members: Account
    :undoc-members:
    :show-inheritance:
    :imported-members:
